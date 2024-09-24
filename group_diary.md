@@ -1,4 +1,4 @@
-## Outcome of the second discussion
+## Outcome of the second discussion (Tuesday, 24 Sep)
 ## Game Mechanics
 1. Players choose the country they belong to, corresponding to the initial ability value;
    

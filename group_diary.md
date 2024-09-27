@@ -1,3 +1,8 @@
+## Outcome of the third discussinon(Friday, 27 Sep)
+1. Demo database structure done, you can download the file "1.database_structure.sql", and create new database on your laptop. 
+   guidence: https://moodle.metropolia.fi/course/view.php?id=1408&section=2
+
+
 ## Outcome of the second discussion (Tuesday, 24 Sep)
 ## Game Mechanics
 1. Players choose the country they belong to, corresponding to the initial ability value;
@@ -15,7 +20,6 @@
    UPDATE inventor 
    SET inventor.position = (SELECT country_id FROM country ORDER BY RAND() LIMIT 1);
    ```
-   **???? need to confirm**
 
 7. The player needs to fly to this location to find the inventor, but the player does not know the exact level of the inventor until he flies to the location. If the trigger is a high level inventor, then it is possible to complete the target value of 200. If it is not completed, then the player needs to continue to collect clue values by choosing destinations in 20 countries.
    
@@ -39,7 +43,8 @@ GDP per Capita - Worldometer. (n.d.). https://www.worldometers.info/gdp/gdp-per-
 
 
 ## Next Step for Third Discussion
-1. A linear function between distance and consumption needs to be established, and it is known that the take-off and landing phases take about 40 minutes regardless of the distance, and the fuel consumed during the take-off and landing phases is roughly 30% to 40% of the total range. (Varies according to model)
+1. A linear function between distance and consumption needs to be established, and it is known that the take-off and landing phases take about 40 minutes regardless of the distance, and the fuel consumed during the take-off and landing phases is roughly 30% to 40% of the total range. (Done)
+
 2. Start writing the code:
     a. It is necessary to start building the tables in the database, confirming the data type of each item of the database that has been designed;
     b. Begin to test whether the values of each item in the initial version are too high or too low.

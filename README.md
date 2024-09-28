@@ -15,7 +15,7 @@ The player's main motivation or psychological incentive: as a member of the comm
 ## Contribution instructions:
 1. Create a new branch.
 2. Commit changes to the new branch created.
-3. If you are finished with your changes, create a pull request to the main branch, and describe your changes.
+3. If you are done with your changes, create a pull request to the main branch, and describe your changes.
 4. Wait for everyone's approval before merging your pull request.
 
 ### WARNING: DO NOT commit directly to the main branch.

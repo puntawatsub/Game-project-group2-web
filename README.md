@@ -11,3 +11,13 @@ And while countries are forming their own research teams, they are so hungry for
 Player's mission: The player's identity is an intelligence spy belonging to a certain country (the initial country is chosen by the player himself), and he needs to find the exact location of the inventor's team by collecting information between different countries, steal their latest knowledge of energy development and transport it back to his home country as soon as possible. Different countries have different Initial Inventive Capability values (Initial Inventive Capability means the country's ability to produce and utilize clean energy; the higher the value, the more efficiently the country can utilize clean energy, generating fewer carbon emissions and significantly improving its air and water quality).
 
 The player's main motivation or psychological incentive: as a member of the community, the player must find a team of inventors more quickly while conserving his or her own carbon emissions in order for his or her country to better earn the respect of the rest of the world, and for his or her country's people to have better air quality and water resources.
+
+## Contribution instructions:
+1. Create a new branch.
+2. Commit changes to the new branch created.
+3. If you are finished with your changes, create a pull request to the main branch, and describe your changes.
+4. Wait for everyone's approval before merging your pull request.
+
+### WARNING: DO NOT commit directly to the main branch.
+
+Any questions regarding the instructions must be discussed with group members.

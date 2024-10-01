@@ -11,7 +11,8 @@ connection = mysql.connector.connect(
 cursor = connection.cursor()
 
 def choose_country():
-    sql = ('SELECT player_country_id,country_name, initial_capa_value from player_country')
+    sql = ('SELECT player_country.player_country_id,player_country.initial_capa_value, country.name FROM player_country'
+           'JOIN country ON player_country.iso_country = country.iso_country')
     cursor.execute(sql)
     result = cursor.fetchall()
     if len(result) == 5:
@@ -22,7 +23,7 @@ def choose_country():
         cp4 = result[3]
         cp5 = result[4]
         for cp in [cp1, cp2, cp3, cp4,cp5]:
-            print(f"{cp[0]}:{cp[1]}, with the initial capability value {cp[2]}");
+            print(f"{cp[0]}:{cp[2]}, with the initial capability value {cp[1]}");
 
 def add_player(player_name,player_country):
     sql = ('UPDATE game_carbon SET player_id = 1, player_name = %s, player_country_id = %s')
@@ -30,7 +31,8 @@ def add_player(player_name,player_country):
     connection.commit()
 
 def choose_destination():
-    sql = ('SELECT country_id,country_name,clue_id from game_country')
+    sql = ('SELECT game_country.country_id,game_country.clue_id, country.name FROM game_country'
+           'JOIN country ON game_country.iso_country = country.iso_country')
     cursor.execute(sql)
     result = cursor.fetchall()
     if len(result) == 20:
@@ -43,7 +45,7 @@ def get_country_coordinates(country_name):
     sql = ("Select latitude_deg,longitude_deg FROM airport "
            "JOIN game_country ON airport.iso_country = game_country.iso_country"
            "WHERE game_country.country_name = %s")
-    cursor.execute(sql, (country_name))
+    cursor.execute(sql, (country_name,))
     result = cursor.fetchone()
     return result
 
@@ -51,7 +53,7 @@ def calculate_distance():
     sql = ("Select latitude_deg,longitude_deg FROM airport "
            "JOIN game_country ON airport.iso_country = game_country.iso_country"
            "WHERE name IN (%s,%s)")
-    cursor = connection.cursor()
+    cursor.execute(sql)
     result = cursor.fetchall()
     if len(result) == 2:
         latitude1, longitude1 = result[0]

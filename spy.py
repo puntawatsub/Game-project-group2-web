@@ -4,8 +4,7 @@ from functions.add_player import add_player
 from functions.destination_options import destination_options
 from functions.get_ap_co_5 import get_ap_co_5
 from functions.get_ap_co_20 import get_ap_co_20
-from functions.get_distance_1st import get_distance_1st
-from functions.get_distance_loop import get_distance_loop
+from functions.get_distance_1st import get_distance
 from functions.get_clue import get_clue
 
 def db_connection():
@@ -37,14 +36,14 @@ if __name__ == "__main__":
     des_ap_co = get_ap_co_20(connection,choose_destination)
 
     # firstly get the distance from the initial country to the destination country
-    dis_ini = get_distance_1st(initial_ap_co,des_ap_co)
+    dis_ini = get_distance(initial_ap_co,des_ap_co)
 
     total_clue_point = 0
     while total_clue_point < 20:
         destinations = destination_options(connection)
         choose_destination = int(input('Enter number to choose your next destination'))
         new_des_ap_co = get_ap_co_20(connection,choose_destination)
-        game_ct_dis = get_distance_loop(des_ap_co,new_des_ap_co)
+        game_ct_dis = get_distance(des_ap_co,new_des_ap_co)
 
         #check if the airport has clue
         check_clue = get_clue(connection,choose_destination)

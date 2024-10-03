@@ -1,3 +1,5 @@
 
 .DS_Store
 Database.code-workspace
+.env
+.idea

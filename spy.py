@@ -4,13 +4,17 @@ from functions.add_player import add_player
 from functions.destination_options import destination_options
 from functions.get_ap_co_5 import get_ap_co_5
 from functions.get_ap_co_20 import get_airport_coordinate_game_country
-from functions.get_distance_1st import get_distance
+from functions.get_distance import get_distance
 from functions.get_clue import get_clue
 import os
 from dotenv import load_dotenv
 from mysql.connector.connection_cext import CMySQLConnection
 
 from functions.randomize_clue import randomize_clue
+from functions.get_inventor import get_inventor
+from functions.generate_inventor_position import generate_inventor_position
+from functions.show_inventor_info import show_inventor_info
+from functions.get_initial_capa_value import get_initial_capa_value
 
 load_dotenv()
 
@@ -80,8 +84,29 @@ if __name__ == "__main__":
             print(f"Current clue point: {total_clue_point}")
             input("Press enter to continue...")
 
+    #after get 20 points of clue, get one inventor randomly from inventor table.
+    inventor_id = get_inventor(connection)[0]
+    # print(find_inventor)
+    # generate a position information (at game_country)
+    generate_inventor_position(connection,inventor_id)
+    inventor_position = show_inventor_info(connection,inventor_id)
+    print(f"You find a {inventor_position[0]} inventor team with {inventor_position[1]} capability value. Go! They are at {inventor_position[3]}.")
+    input("Press enter to continue...")
 
-## "you have found xx point"
+    initial_capability_value = get_initial_capa_value(connection,player_name)[1]
+    # number = int(initial_capability_value)
+    capability_value_goal = 200
+    capability_value_found= show_inventor_info(connection,inventor_id)[1]
+    capability_value_left = initial_capability_value + capability_value_found - capability_value_goal
+    print(capability_value_left)
+    # while True:
+    #     if initial_capability_value + capability_value_found - capability_value_goal >= 0:
+    #         print(f'win')
+    #     else:
+    #         print(f'continue')
+
+
+
 
 ## after 20 point end loop, trigger inventor information.
 

@@ -1,4 +1,5 @@
-
+# WORKING
+# Add player to database
 
 def add_player(connection,player_name,player_country_id,carbon_limit):
     cursor = connection.cursor()

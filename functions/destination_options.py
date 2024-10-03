@@ -5,9 +5,9 @@ def destination_options(connection):
            'JOIN country ON game_country.iso_country = country.iso_country')
     cursor.execute(sql)
     result = cursor.fetchall()
-    if len(result) == 20:
-        # gc represent the 20 destination choice.
-        for gc in result:
-            print(f"{gc[0]}：{gc[2]}")
+    # if len(result) == 20:
+    #     # gc represent the 20 destination choice.
+    #     for gc in result:
+    #         print(f"{gc[0]}：{gc[2]}")
     cursor.close()
     return result

@@ -9,6 +9,7 @@ def choose_player_country(connection):
     result = cursor.fetchall()
     if len(result) == 5:
         # player_country1 = cp1, player_country2 = cp2 ....
-        cp1, cp2, cp3, cp4, cp5 = result[:5]
-        for cp in [cp1, cp2, cp3, cp4,cp5]:
+        # cp1, cp2, cp3, cp4, cp5 = result[:5]
+        for cp in result:
             print(f"{cp[0]}:{cp[2]}, with the initial capability value {cp[1]}");
+    return result

@@ -24,11 +24,11 @@ Any questions regarding the instructions must be discussed with group members.
 
 
 ### The current main functionality of the game are:
-- Select starting country
-- Select first and subsequent destinations
-- Get clues and invention score
-- Able to calculate distance
-- The player can win the game if the invention score is 200 or above
+- [x] Select starting country
+- [x] Select first and subsequent destinations
+- [x] Get clues and invention score
+- [x] Able to calculate distance
+- [x] The player can win the game if the invention score is 200 or above
 
 ### Todo:
 - [ ] Competitors (computer)

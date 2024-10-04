@@ -32,7 +32,7 @@ Any questions regarding the instructions must be discussed with group members.
 
 ### Todo:
 - [ ] Competitors (computer)
-- [ ] Carbon emission calculation
+- [x] Carbon emission calculation
 - [ ] More consequences of carbon emission
 
 ### In the future:

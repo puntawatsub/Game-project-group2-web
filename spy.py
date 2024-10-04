@@ -21,6 +21,7 @@ from functions.get_initial_capa_value import get_initial_capa_value
 load_dotenv()
 
 invention_point = dict()
+carbon_emission = dict()
 
 # function to establish new db connection
 def db_connection() -> CMySQLConnection:
@@ -57,13 +58,14 @@ if __name__ == "__main__":
     # Add player to database
     add_player(connection,player_name,player_country_id,carbon_limit)
 
-    # Add in-game countries into dictionary {country_name: capacity}
+    # Add in-game countries into dictionaries {country_name: value}, {country_name: carbon_emission}
     destinations = destination_options(connection)
     for player_country_option in player_country_options:
         # print(player_country_option[2])
         initial_capacity = get_initial_capa_value(connection, player_country_option[2], "country")
         if len(initial_capacity) > 0:
             invention_point[f"{player_country_option[2]}"] = initial_capacity[0][1]
+            carbon_emission[f"{player_country_option[2]}"] = 0
 
     # print(invention_point)
 
@@ -106,6 +108,16 @@ if __name__ == "__main__":
         if should_break:
             break
 
+        for key in carbon_emission.keys():
+            if carbon_emission[key] >= carbon_limit:
+                print(f"{key} exceeded carbon emission limit!")
+                if key == player_country_name:
+                    print(f"You lost!")
+                    should_break = True
+                    break
+        if should_break:
+            break
+
         # Loop asking user for the next destination until clue point is >= 20
         while total_clue_point < 20:
 
@@ -129,7 +141,18 @@ if __name__ == "__main__":
 
             # Check if player moved
             if game_country_distance > 0:
+
+                # Print distance
                 print(f"Distance: {game_country_distance}")
+
+                # Calculate the carbon emission using the distance
+                carbon_emission_flight = 200 + (0.15 * game_country_distance)
+                # Print the carbon emission
+                print(f"Carbon Emission: {carbon_emission_flight}")
+                # Save carbon emission to the dictionary
+                carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+                # Print current carbon emission of the player's country
+                print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
 
                 # Change current airport coordinate to the new selected airport
                 destination_airport_coordinate = new_des_airport_coordinate
@@ -195,7 +218,17 @@ if __name__ == "__main__":
 
         # Get distance from current airport to the new destination airport
         game_country_distance = get_distance(destination_airport_coordinate, new_des_airport_coordinate)
-        print(f"Distance: {game_country_distance}")
+
+
+        # Calculate the carbon emission using the distance
+        carbon_emission_flight = 200 + (0.15 * game_country_distance)
+        # Print the carbon emission
+        print(f"Carbon Emission: {carbon_emission_flight}")
+        # Save carbon emission to the dictionary
+        carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+        # Print current carbon emission of the player's country
+        print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+
 
         if inventor_location == choose_destination:
             inventor_choice = random.choices([False, True], weights=(6, 4))

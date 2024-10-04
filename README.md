@@ -21,3 +21,20 @@ The player's main motivation or psychological incentive: as a member of the comm
 ### WARNING: DO NOT commit directly to the main branch.
 
 Any questions regarding the instructions must be discussed with group members.
+
+
+### The current main functionality of the game are:
+- Select starting country
+- Select first and subsequent destinations
+- Get clues and invention score
+- Able to calculate distance
+- The player can win the game if the invention score is 200 or above
+
+### Todo:
+- [ ] Competitors (computer)
+- [ ] Carbon emission calculation
+- [ ] More consequences of carbon emission
+
+### In the future:
+- [ ] Diplomatic relations between player country and game country
+- [ ] Possibility to upgrade aircraft using invention point (to reduce carbon emission)

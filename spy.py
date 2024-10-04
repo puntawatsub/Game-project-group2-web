@@ -1,8 +1,11 @@
 import random
 
 import mysql.connector
+
+from functions.calculate_carbon_emission import calculate_carbon_emission
 from functions.choose_country import choose_player_country
 from functions.add_player import add_player
+from functions.competitors import competitors
 from functions.destination_options import destination_options
 from functions.get_ap_co_5 import get_ap_co_5
 from functions.get_ap_co_20 import get_airport_coordinate_game_country
@@ -22,6 +25,8 @@ load_dotenv()
 
 invention_point = dict()
 carbon_emission = dict()
+competitors_location = dict()
+competitors_clue_point = dict()
 
 # function to establish new db connection
 def db_connection() -> CMySQLConnection:
@@ -55,6 +60,12 @@ if __name__ == "__main__":
     # set the initial carbon_limit (for now every player is the same)
     carbon_limit = 7000
 
+    # target clue point
+    clue_target = 20
+
+    # invention point target
+    invention_target = 200
+
     # Add player to database
     add_player(connection,player_name,player_country_id,carbon_limit)
 
@@ -65,8 +76,9 @@ if __name__ == "__main__":
         initial_capacity = get_initial_capa_value(connection, player_country_option[2], "country")
         if len(initial_capacity) > 0:
             invention_point[f"{player_country_option[2]}"] = initial_capacity[0][1]
-            carbon_emission[f"{player_country_option[2]}"] = 0
-
+            carbon_emission[f"{player_country_option[2]}"] = 0.0
+            competitors_clue_point[f"{player_country_option[2]}"] = 0
+            competitors_location[f"{player_country_option[2]}"] = get_ap_co_5(connection, player_country_option[0])
     # print(invention_point)
 
     # get all possible destinations
@@ -101,10 +113,11 @@ if __name__ == "__main__":
 
         # if anyone has score of greater or equal to 200, that person wins.
         for key in invention_point.keys():
-            if invention_point[key] >= 200:
+            # print(f"{key}: {invention_point[key]}")
+            if invention_point[key] >= invention_target:
                 print(f"{key} won!")
                 should_break = True
-                break
+                exit(0)
         if should_break:
             break
 
@@ -114,12 +127,37 @@ if __name__ == "__main__":
                 if key == player_country_name:
                     print(f"You lost!")
                     should_break = True
-                    break
+                    exit(0)
+                else:
+                    invention_point.pop(key, None)
         if should_break:
             break
 
         # Loop asking user for the next destination until clue point is >= 20
-        while total_clue_point < 20:
+        while total_clue_point < clue_target:
+            should_break = False
+
+            # if anyone has score of greater or equal to 200, that person wins.
+            for key in invention_point.keys():
+                print(f"{key}: {invention_point[key]}")
+                if invention_point[key] >= invention_target:
+                    print(f"{key} won!")
+                    should_break = True
+                    exit(0)
+            if should_break:
+                break
+
+            for key in carbon_emission.keys():
+                if carbon_emission[key] >= carbon_limit:
+                    print(f"{key} exceeded carbon emission limit!")
+                    if key == player_country_name:
+                        print(f"You lost!")
+                        should_break = True
+                        exit(0)
+                    else:
+                        invention_point.pop(key, None)
+            if should_break:
+                break
 
             # Randomize clues locations
             randomize_clue(connection)
@@ -146,7 +184,7 @@ if __name__ == "__main__":
                 print(f"Distance: {game_country_distance}")
 
                 # Calculate the carbon emission using the distance
-                carbon_emission_flight = 200 + (0.15 * game_country_distance)
+                carbon_emission_flight = calculate_carbon_emission(game_country_distance)
                 # Print the carbon emission
                 print(f"Carbon Emission: {carbon_emission_flight}")
                 # Save carbon emission to the dictionary
@@ -187,8 +225,12 @@ if __name__ == "__main__":
                     input("Press enter to continue...")
             else:
                 # If player doesn't move, warn player. With penalty.
-                print("You cannot select the same location. Taxiing around the same airport cost your carbon credit and a fine!: +140 Carbon Emission")
+                print("Taxiing around the same airport cost your carbon credit and a fine!: +1400 Carbon Emission")
                 input("Press enter to continue...")
+
+            # run competitors turn
+            competitors(clue_target, player_country_name, invention_point, carbon_emission, competitors_location, competitors_clue_point, connection)
+            input("Press enter to continue...")
     # end loop
 
         # after 20 points of clue, get one inventor randomly from inventor table.
@@ -221,7 +263,7 @@ if __name__ == "__main__":
 
 
         # Calculate the carbon emission using the distance
-        carbon_emission_flight = 200 + (0.15 * game_country_distance)
+        carbon_emission_flight = calculate_carbon_emission(game_country_distance)
         # Print the carbon emission
         print(f"Carbon Emission: {carbon_emission_flight}")
         # Save carbon emission to the dictionary

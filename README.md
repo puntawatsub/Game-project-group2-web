@@ -29,9 +29,10 @@ Any questions regarding the instructions must be discussed with group members.
 - [x] Get clues and invention score
 - [x] Able to calculate distance
 - [x] The player can win the game if the invention score is 200 or above
+- [x] Player will lose the game if they exceed carbon limit
 
 ### Todo:
-- [ ] Competitors (computer)
+- [x] Competitors (computer)
 - [x] Carbon emission calculation
 - [ ] More consequences of carbon emission
 

@@ -9,6 +9,7 @@ def add_player(connection,player_name,player_country_id,carbon_limit):
     row = cursor.fetchall()
     if len(row) != 0:
         print("Player Exists")
+        print("Restart a game with another player name!")
         exit(1)
     sql = ('INSERT INTO player (player_name, player_country_id,carbon_limit) VALUES (%s, %s, %s)')
     cursor.execute(sql,(player_name,player_country_id,carbon_limit))

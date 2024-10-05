@@ -49,13 +49,13 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
         # Modify current carbon emission of the competitor's country
         carbon_emission[f"{country}"] += turn_carbon_emission
 
-        print(f"{country} emitted {carbon_emission[str(country)]} carbon")
+        print(f"{country} emitted {carbon_emission[str(country)]:.2f} carbon")
 
         clue = get_clue(connection, choose_destination)
 
         if clue:
             # If clue exist, print clue type and points associated to it
-            print(f"{country} met {clue[2]} with {clue[1]} clue points!")
+            print(f"\033[36m{country} met {clue[2]} with {clue[1]} clue points!\033[0m")
             competitors_clue_point[f"{country}"] += clue[1]
 
             # print current competitor's clue point
@@ -73,7 +73,7 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
             generate_inventor_position(connection, inventor_id)
             inventor_position = show_inventor_info(connection, inventor_id)
             inventor_location, inventor_value = inventor_position[4], inventor_position[1]
-            inventor_choice = random.choices([False, True], weights=(6, 4))
+            inventor_choice = random.choices([False, True], weights=(4, 6))
             if inventor_choice[0]:
                 print(f"{country} have found inventor which chose to cooperate with your work! {country} got {inventor_value} points!")
                 invention_point[country] += int(inventor_value)

@@ -91,6 +91,7 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
 
 
             inventor_choice = random.choices([False, True], weights=(4, 10))
+
             if inventor_choice[0]:
                 print(f"{country} have found inventor which chose to cooperate with their work! {country} got {inventor_value} points!")
                 invention_point[country] += int(inventor_value)

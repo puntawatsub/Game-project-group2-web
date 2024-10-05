@@ -187,18 +187,19 @@ if __name__ == "__main__":
             if game_country_distance > 0:
 
                 # Print distance
-                print(f"Distance you flied this time: {game_country_distance:.2f}")
+                print(f"Flight Distance: {game_country_distance:.2f}")
 
                 # Calculate the carbon emission using the distance
                 carbon_emission_flight = calculate_carbon_emission(game_country_distance)
                 # Print the carbon emission
-                print(f"Carbon Emission you cost this flight: {carbon_emission_flight:.2f}")
+                print(f"Flight Carbon Emission: {carbon_emission_flight:.2f}")
                 # Save carbon emission to the dictionary
                 carbon_emission[f"{player_country_name}"] += carbon_emission_flight
                 # Print current carbon emission of the player's country
-                print(f"Total Emission you have cost: {carbon_emission[str(player_country_name)]:.2f}")
+                print(f"Total Emission: {carbon_emission[str(player_country_name)]:.2f}")
+                # Print carbon emission left
                 carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
-                print(f"\033[33mYou have {carbon_left:.2f} carbon emission left.\033[0m")
+                print(f"You have {carbon_left:.2f} carbon emission left.")
                 print("-" * 60)
 
                 # Change current airport coordinate to the new selected airport
@@ -273,17 +274,27 @@ if __name__ == "__main__":
         # Get distance from current airport to the new destination airport
         game_country_distance = get_distance(destination_airport_coordinate, new_des_airport_coordinate)
 
+        if game_country_distance > 0:
+            # Calculate the carbon emission using the distance
+            carbon_emission_flight = calculate_carbon_emission(game_country_distance)
+            # Print the carbon emission
+            print(f"Flight Carbon Emission: {carbon_emission_flight:.2f}")
+            # Save carbon emission to the dictionary
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            # Print current carbon emission of the player's country
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+            # Print carbon emission left
+            carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
+            print(f"you have {carbon_left:.2f} carbon emission left.")
 
-        # Calculate the carbon emission using the distance
-        carbon_emission_flight = calculate_carbon_emission(game_country_distance)
-        # Print the carbon emission
-        print(f"Carbon Emission this flight: {carbon_emission_flight:.2f}")
-        # Save carbon emission to the dictionary
-        carbon_emission[f"{player_country_name}"] += carbon_emission_flight
-        # Print current carbon emission of the player's country
-        print(f"Total Emission: {carbon_emission[str(player_country_name)]:.2f}")
-        carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
-        print(f"you have {carbon_left:.2f} carbon emission left.")
+            # Change current airport coordinate to the new selected airport
+            destination_airport_coordinate = new_des_airport_coordinate
+        else:
+            print("Taxiing around the same airport cost your carbon credit and a fine!: +1400 Carbon Emission")
+            carbon_emission_flight = 1400
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+
 
 
         if inventor_location == choose_destination:

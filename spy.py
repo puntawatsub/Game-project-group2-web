@@ -181,16 +181,16 @@ if __name__ == "__main__":
             if game_country_distance > 0:
 
                 # Print distance
-                print(f"Distance: {game_country_distance}")
+                print(f"Distance: {game_country_distance:.2f}")
 
                 # Calculate the carbon emission using the distance
                 carbon_emission_flight = calculate_carbon_emission(game_country_distance)
                 # Print the carbon emission
-                print(f"Carbon Emission: {carbon_emission_flight}")
+                print(f"Carbon Emission: {carbon_emission_flight:.2f}")
                 # Save carbon emission to the dictionary
                 carbon_emission[f"{player_country_name}"] += carbon_emission_flight
                 # Print current carbon emission of the player's country
-                print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+                print(f"Total Emission: {carbon_emission[str(player_country_name)]:.2f}")
 
                 # Change current airport coordinate to the new selected airport
                 destination_airport_coordinate = new_des_airport_coordinate
@@ -261,15 +261,25 @@ if __name__ == "__main__":
         # Get distance from current airport to the new destination airport
         game_country_distance = get_distance(destination_airport_coordinate, new_des_airport_coordinate)
 
+        if game_country_distance > 0:
+            # Calculate the carbon emission using the distance
+            carbon_emission_flight = calculate_carbon_emission(game_country_distance)
+            # Print the carbon emission
+            print(f"Carbon Emission: {carbon_emission_flight}")
+            # Save carbon emission to the dictionary
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            # Print current carbon emission of the player's country
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
 
-        # Calculate the carbon emission using the distance
-        carbon_emission_flight = calculate_carbon_emission(game_country_distance)
-        # Print the carbon emission
-        print(f"Carbon Emission: {carbon_emission_flight}")
-        # Save carbon emission to the dictionary
-        carbon_emission[f"{player_country_name}"] += carbon_emission_flight
-        # Print current carbon emission of the player's country
-        print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+            # Change current airport coordinate to the new selected airport
+            destination_airport_coordinate = new_des_airport_coordinate
+        else:
+            print("Taxiing around the same airport cost your carbon credit and a fine!: +1400 Carbon Emission")
+            carbon_emission_flight = 1400
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+
+
 
 
         if inventor_location == choose_destination:
@@ -319,20 +329,20 @@ if __name__ == "__main__":
 
 
 
-    # Obsolete
-    # initial_capability_value: int = get_initial_capa_value(connection, player_name)[0][1]
-    # # print(type(initial_capability_value))
-    # # number = int(initial_capability_value)
-    # capability_value_goal: int = 200
-    # capability_value_found: int = int(show_inventor_info(connection,inventor_id)[1])
-    # # print(type(capability_value_goal))
-    # # print(type(capability_value_found))
-    # capability_value_left: int = initial_capability_value + capability_value_found - capability_value_goal
-    # while True:
-    #     if initial_capability_value + capability_value_found - capability_value_goal >= 0:
-    #         print(f'win')
-    #     else:
-    #         print(f'continue')
+# Obsolete
+# initial_capability_value: int = get_initial_capa_value(connection, player_name)[0][1]
+# # print(type(initial_capability_value))
+# # number = int(initial_capability_value)
+# capability_value_goal: int = 200
+# capability_value_found: int = int(show_inventor_info(connection,inventor_id)[1])
+# # print(type(capability_value_goal))
+# # print(type(capability_value_found))
+# capability_value_left: int = initial_capability_value + capability_value_found - capability_value_goal
+# while True:
+#     if initial_capability_value + capability_value_found - capability_value_goal >= 0:
+#         print(f'win')
+#     else:
+#         print(f'continue')
 
 ## add inventor value to initial_capa_value to player_country.
 

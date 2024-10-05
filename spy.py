@@ -118,7 +118,7 @@ if __name__ == "__main__":
         for key in invention_point.keys():
             # print(f"{key}: {invention_point[key]}")
             if invention_point[key] >= invention_target:
-                print(f"\033[31m{key} won!\033[0m")
+                print(f"{key} won!")
                 should_break = True
                 exit(0)
         if should_break:

@@ -54,7 +54,7 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
 
         if clue:
             # If clue exist, print clue type and points associated to it
-            print(f"\033[36m{country} met {clue[2]} with {clue[1]} clue points!\033[0m")
+            print(f"{country} met {clue[2]} with {clue[1]} clue points!")
             competitors_clue_point[f"{country}"] += clue[1]
 
             # print current competitor's clue point

@@ -128,7 +128,7 @@ if __name__ == "__main__":
             if carbon_emission[key] >= carbon_limit:
                 print(f"{key} exceeded carbon emission limit!")
                 if key == player_country_name:
-                    print(f"\033[31mYou lost!\033[0m")
+                    print(f"You lost!")
                     should_break = True
                     exit(0)
                 else:
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
             for key in carbon_emission.keys():
                 if carbon_emission[key] >= carbon_limit:
-                    print(f"\033[31m{key} exceeded carbon emission limit!\033[0m")
+                    print(f"{key} exceeded carbon emission limit!")
                     if key == player_country_name:
                         print(f"You lost!")
                         should_break = True
@@ -217,7 +217,7 @@ if __name__ == "__main__":
                 if clue:
                     # If clue exist, print clue type and points associated to it
 
-                    print(f"\033[36mYou've met {clue[2]} with {clue[1]} clue points!\033[0m")
+                    print(f"You've met {clue[2]} with {clue[1]} clue points!")
                     total_clue_point += clue[1]
 
                     # print current player's clue point
@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
                     # print current player's clue point
 
-                    print(f"\033[36mCurrent clue point: {total_clue_point}.\033[0m")
+                    print(f"Current clue point: {total_clue_point}")
                     print("-" * 60)
                     # prompt user to enter to continue
                     input("Press enter to continue...")
@@ -300,7 +300,7 @@ if __name__ == "__main__":
         if inventor_location == choose_destination:
             inventor_choice = random.choices([False, True], weights=(4, 6))
             if inventor_choice[0]:
-                print(f"\033[33mCongratulations! You've found inventor which chose to cooperate with your work! You've got {inventor_value} points!\033[0m")
+                print(f"Congratulations! You've found inventor which chose to cooperate with your work! You've got {inventor_value} points!")
                 invention_point[player_country_name] += int(inventor_value)
                 print(f"Current invention point: {invention_point[player_country_name]}")
                 input("Press enter to continue...")

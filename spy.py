@@ -118,7 +118,7 @@ if __name__ == "__main__":
         for key in invention_point.keys():
             # print(f"{key}: {invention_point[key]}")
             if invention_point[key] >= invention_target:
-                print(f"{key} won!")
+                print(f"\033[32m{key} won!\033[0m")
                 should_break = True
                 exit(0)
         if should_break:
@@ -126,9 +126,9 @@ if __name__ == "__main__":
 
         for key in carbon_emission.keys():
             if carbon_emission[key] >= carbon_limit:
-                print(f"{key} exceeded carbon emission limit!")
+                print(f"\033[31m{key} exceeded carbon emission limit!\033[0m")
                 if key == player_country_name:
-                    print(f"You lost!")
+                    print(f"\033[31mYou lost!\033[0m")
                     should_break = True
                     exit(0)
                 else:
@@ -152,9 +152,9 @@ if __name__ == "__main__":
 
             for key in carbon_emission.keys():
                 if carbon_emission[key] >= carbon_limit:
-                    print(f"{key} exceeded carbon emission limit!")
+                    print(f"\033[31m{key} exceeded carbon emission limit!\033[0m")
                     if key == player_country_name:
-                        print(f"You lost!")
+                        print(f"\033[31mYou lost!\033[0m")
                         should_break = True
                         exit(0)
                     else:
@@ -199,7 +199,7 @@ if __name__ == "__main__":
                 print(f"Total Emission: {carbon_emission[str(player_country_name)]:.2f}")
                 # Print carbon emission left
                 carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
-                print(f"You have {carbon_left:.2f} carbon emission left.")
+                print(f"\033[33mYou have {carbon_left:.2f} carbon emission left.\033[0m")
                 print("-" * 60)
 
                 # Change current airport coordinate to the new selected airport
@@ -256,7 +256,7 @@ if __name__ == "__main__":
         inventor_position = show_inventor_info(connection,inventor_id)
 
         # Tell user to find the inventor in the provided location
-        print(f"You find a {inventor_position[0]} inventor team with {inventor_position[1]} capability value. Go! They are in {inventor_position[3]}.")
+        print(f"\033[31mYou find a {inventor_position[0]} inventor team with {inventor_position[1]} capability value. Go! They are in {inventor_position[3]}.\033[0m")
         input("Press enter to continue...")
 
         inventor_location, inventor_value = inventor_position[4], inventor_position[1]
@@ -300,7 +300,7 @@ if __name__ == "__main__":
         if inventor_location == choose_destination:
             inventor_choice = random.choices([False, True], weights=(4, 6))
             if inventor_choice[0]:
-                print(f"Congratulations! You've found inventor which chose to cooperate with your work! You've got {inventor_value} points!")
+                print(f"\033[36mCongratulations! You've found inventor which chose to cooperate with your work! You've got {inventor_value} points!\033[0m")
                 invention_point[player_country_name] += int(inventor_value)
                 print(f"Current invention point: {invention_point[player_country_name]}")
                 input("Press enter to continue...")

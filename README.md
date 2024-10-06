@@ -11,6 +11,86 @@ In this war without smoke, the world is gradually divided into three different r
 
 ♻️The player's main motivation or psychological incentive: as a member of the community, the player must find a team of inventors more quickly while conserving his or her own carbon emissions in order for his or her country to better earn the respect of the rest of the world, and for his or her country's people to have better air quality and water resources.
 
+## Player instructions (For bash terminal) Run these commands one-by-one:
+1. Clone this repository and chance the directory of the current terminal
+```
+git clone https://github.com/YUEZHANG-metro/Game-project-group2-python.git && cd Game-project-group2-python
+```
+2. Create python virtual environment
+```
+python -m venv .venv
+```
+3. Activate python environment
+```
+source .venv/bin/activate
+```
+4. Install the required modules
+```
+pip install -r requirements.txt
+```
+5. Rename and edit the SQL database info
+```
+mv .env.template .env && nano .env
+```
+6. Run the game
+```
+python spy.py
+```
+7. After you've finished the game, don't forget to deactivate the environment
+```
+deactivate
+```
+### To run the game after the first time:
+```
+cd Game-project-group2-python && source .venv/bin/activate
+```
+```
+python spy.py
+```
+## Player instructions (For Windows PowerShell) run these commands one-by-one:
+1. Clone this repository
+```
+git clone https://github.com/YUEZHANG-metro/Game-project-group2-python.git
+```
+2. Change the current directory
+```
+cd .\Game-project-group2-python\
+```
+3. Create a virtual python environment
+```
+python -m venv .venv
+```
+4. Activate the python environment
+```
+.\.venv\Scripts\activate
+```
+5. Install the required modules
+```
+pip install -r requirements.txt
+```
+6. Rename .env.template to .env
+```
+mv .env.template .env
+```
+7. Edit SQL Database info
+```
+notepad .env
+```
+8. Run the game
+```
+python spy.py
+```
+### To run the game after the first time:
+```
+cd .\Game-project-group2-python\
+```
+```
+.\.venv\Scripts\activate
+```
+```
+python spy.py
+```
+
 ## Contribution instructions:
 1. Create a new branch.
 2. Commit changes to the new branch created.

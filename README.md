@@ -36,6 +36,17 @@ mv .env.template .env && nano .env
 ```
 python spy.py
 ```
+7. After you've finished the game, don't forget to deactivate the environment
+```
+deactivate
+```
+### To run the game after the first time:
+```
+cd Game-project-group2-python && source .venv/bin/activate
+```
+```
+python spy.py
+```
 
 
 ## Contribution instructions:

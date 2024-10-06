@@ -13,6 +13,7 @@ from functions.show_inventor_info import show_inventor_info
 
 # Invention point dictionary key will determine the list of countries
 def competitors(clue_target: int, player_country_name: str, invention_point: dict, carbon_emission: dict, competitors_location: dict, competitors_clue_point: dict, connection: CMySQLConnection) -> bool:
+    print("")
     countries = list(invention_point.keys())
     countries.remove(player_country_name)
     competitors_location.pop(f"{player_country_name}", None)
@@ -49,8 +50,6 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
         # Modify current carbon emission of the competitor's country
         carbon_emission[f"{country}"] += turn_carbon_emission
 
-        print(f"{country} emitted {carbon_emission[str(country)]} carbon")
-
         clue = get_clue(connection, choose_destination)
 
         if clue:
@@ -73,15 +72,34 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
             generate_inventor_position(connection, inventor_id)
             inventor_position = show_inventor_info(connection, inventor_id)
             inventor_location, inventor_value = inventor_position[4], inventor_position[1]
-            inventor_choice = random.choices([False, True], weights=(6, 4))
+
+            # Get this turn's carbon emission
+            turn_carbon_emission = 0
+            inventor_airport_coordinate = get_airport_coordinate_game_country(connection, inventor_location)
+            turn_distance = get_distance(competitors_location[f"{country}"], inventor_airport_coordinate)
+            if turn_distance == 0:
+                print(f"{country} taxied around in the same runway and emitted +1400 carbon")
+                turn_carbon_emission = 1400
+            else:
+                turn_carbon_emission = calculate_carbon_emission(turn_distance)
+
+            # Change current coordinate to inventor's location
+            competitors_location[f"{country}"] = inventor_airport_coordinate
+
+            # Add carbon emission to country
+            carbon_emission[f"{country}"] += turn_carbon_emission
+
+
+            inventor_choice = random.choices([False, True], weights=(4, 10))
+
             if inventor_choice[0]:
-                print(f"{country} have found inventor which chose to cooperate with your work! {country} got {inventor_value} points!")
+                print(f"{country} have found inventor which chose to cooperate with their work! {country} got {inventor_value} points!")
                 invention_point[country] += int(inventor_value)
                 print(f"Current invention point for {country}: {invention_point[country]}")
             else:
                 print(f"Inventor chose not to cooperate with {country}!")
             competitors_clue_point[f"{country}"] = 0
+        print(f"{country} emitted {carbon_emission[str(country)]:.2f} carbon")
         print("")
-
 
     return True

@@ -1,7 +1,7 @@
 import random
 
 import mysql.connector
-
+from functions.story_telling import story_telling
 from functions.calculate_carbon_emission import calculate_carbon_emission
 from functions.choose_country import choose_player_country
 from functions.add_player import add_player
@@ -47,18 +47,23 @@ if __name__ == "__main__":
     # Established DB Connection
     connection = db_connection()
 
+    #show the story behind the game
+    story_telling()
+
     # prompt for player name
     player_name = input("Enter player name: ")
-
+    print("-" * 60)
     # prompt player to choose a country
+    print("Choose your country from the list below, different ability values mean that you will face different difficulty challenges")
     player_country_options = choose_player_country(connection)
     player_country_id = int(input('Enter number to choose your country (1-5): '))
+    print("=" * 60)
 
     # get player's home country coordinate
     initial_ap_co = get_ap_co_5(connection, player_country_id)
 
     # set the initial carbon_limit (for now every player is the same)
-    carbon_limit = 7000
+    carbon_limit = 10000
 
     # target clue point
     clue_target = 20
@@ -68,9 +73,13 @@ if __name__ == "__main__":
 
     # Add player to database
     add_player(connection,player_name,player_country_id,carbon_limit)
+    print(f"You have {carbon_limit} points carbon emission to use, if you run out it, you loss your chance!")
+    print("=" * 60)
+    print(f"Situation of the competitors below:")
 
     # Add in-game countries into dictionaries {country_name: value}, {country_name: carbon_emission}
     destinations = destination_options(connection)
+
     for player_country_option in player_country_options:
         # print(player_country_option[2])
         initial_capacity = get_initial_capa_value(connection, player_country_option[2], "country")
@@ -92,20 +101,14 @@ if __name__ == "__main__":
     destination_airport_coordinate = initial_ap_co
 
 
-
-    #
-    # # add current airport coordinate as current player coordinate
+    # add current airport coordinate as current player coordinate
     # current_coordinate.append(destination_airport_coordinate)
-    #
-    # # firstly get the distance from the initial country to the destination country
-    # dis_ini = get_distance(initial_ap_co,destination_airport_coordinate)
 
     # Initialize total_clue_point variable
     total_clue_point = 0
 
     # player country name
     player_country_name = list(invention_point.keys())[player_country_id - 1]
-
 
     while True:
 
@@ -141,7 +144,7 @@ if __name__ == "__main__":
             for key in invention_point.keys():
                 print(f"{key}: {invention_point[key]}")
                 if invention_point[key] >= invention_target:
-                    print(f"{key} won!")
+                    print(f"\033[31m{key} won!\033[0m")
                     should_break = True
                     exit(0)
             if should_break:
@@ -163,6 +166,9 @@ if __name__ == "__main__":
             randomize_clue(connection)
 
             # prompt user for the next destination
+            print("-" * 60)
+            print("Choose your next destination.")
+
             destinations = destination_options(connection)
 
             # Prompt user for the next destinations
@@ -181,16 +187,20 @@ if __name__ == "__main__":
             if game_country_distance > 0:
 
                 # Print distance
-                print(f"Distance: {game_country_distance}")
+                print(f"Flight Distance: {game_country_distance:.2f}")
 
                 # Calculate the carbon emission using the distance
                 carbon_emission_flight = calculate_carbon_emission(game_country_distance)
                 # Print the carbon emission
-                print(f"Carbon Emission: {carbon_emission_flight}")
+                print(f"Flight Carbon Emission: {carbon_emission_flight:.2f}")
                 # Save carbon emission to the dictionary
                 carbon_emission[f"{player_country_name}"] += carbon_emission_flight
                 # Print current carbon emission of the player's country
-                print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+                print(f"Total Emission: {carbon_emission[str(player_country_name)]:.2f}")
+                # Print carbon emission left
+                carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
+                print(f"You have {carbon_left:.2f} carbon emission left.")
+                print("-" * 60)
 
                 # Change current airport coordinate to the new selected airport
                 destination_airport_coordinate = new_des_airport_coordinate
@@ -206,6 +216,7 @@ if __name__ == "__main__":
                 # Check if the clue exist in the selected country
                 if clue:
                     # If clue exist, print clue type and points associated to it
+
                     print(f"You've met {clue[2]} with {clue[1]} clue points!")
                     total_clue_point += clue[1]
 
@@ -214,13 +225,15 @@ if __name__ == "__main__":
 
                     # prompt user to enter to continue
                     input("Press enter to continue...")
+                    print("-" * 60)
                 else:
                     # If clue does not exist, tell user they've not met anyone.
                     print("You've met no one.")
 
                     # print current player's clue point
-                    print(f"Current clue point: {total_clue_point}")
 
+                    print(f"Current clue point: {total_clue_point}")
+                    print("-" * 60)
                     # prompt user to enter to continue
                     input("Press enter to continue...")
             else:
@@ -261,81 +274,41 @@ if __name__ == "__main__":
         # Get distance from current airport to the new destination airport
         game_country_distance = get_distance(destination_airport_coordinate, new_des_airport_coordinate)
 
+        if game_country_distance > 0:
+            # Calculate the carbon emission using the distance
+            carbon_emission_flight = calculate_carbon_emission(game_country_distance)
+            # Print the carbon emission
+            print(f"Flight Carbon Emission: {carbon_emission_flight:.2f}")
+            # Save carbon emission to the dictionary
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            # Print current carbon emission of the player's country
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+            # Print carbon emission left
+            carbon_left = carbon_limit - carbon_emission[str(player_country_name)]
+            print(f"you have {carbon_left:.2f} carbon emission left.")
 
-        # Calculate the carbon emission using the distance
-        carbon_emission_flight = calculate_carbon_emission(game_country_distance)
-        # Print the carbon emission
-        print(f"Carbon Emission: {carbon_emission_flight}")
-        # Save carbon emission to the dictionary
-        carbon_emission[f"{player_country_name}"] += carbon_emission_flight
-        # Print current carbon emission of the player's country
-        print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+            # Change current airport coordinate to the new selected airport
+            destination_airport_coordinate = new_des_airport_coordinate
+        else:
+            print("Taxiing around the same airport cost your carbon credit and a fine!: +1400 Carbon Emission")
+            carbon_emission_flight = 1400
+            carbon_emission[f"{player_country_name}"] += carbon_emission_flight
+            print(f"Total Emission: {carbon_emission[str(player_country_name)]}")
+
 
 
         if inventor_location == choose_destination:
-            inventor_choice = random.choices([False, True], weights=(6, 4))
+            inventor_choice = random.choices([False, True], weights=(4, 6))
             if inventor_choice[0]:
                 print(f"Congratulations! You've found inventor which chose to cooperate with your work! You've got {inventor_value} points!")
                 invention_point[player_country_name] += int(inventor_value)
                 print(f"Current invention point: {invention_point[player_country_name]}")
                 input("Press enter to continue...")
             else:
-                print("Inventor chose not to cooperate with your work!")
+                print("\033[33mInventor chose not to cooperate with your work!\033[0m")
                 input("Press enter to continue...")
         else:
-            print("You've missed your chances, inventor had changed their location.")
+            print("\033[33mYou've missed your chances, inventor had changed their location.\033[0m")
             input("Press enter to continue...")
 
         inventor_location = None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # Obsolete
-    # initial_capability_value: int = get_initial_capa_value(connection, player_name)[0][1]
-    # # print(type(initial_capability_value))
-    # # number = int(initial_capability_value)
-    # capability_value_goal: int = 200
-    # capability_value_found: int = int(show_inventor_info(connection,inventor_id)[1])
-    # # print(type(capability_value_goal))
-    # # print(type(capability_value_found))
-    # capability_value_left: int = initial_capability_value + capability_value_found - capability_value_goal
-    # while True:
-    #     if initial_capability_value + capability_value_found - capability_value_goal >= 0:
-    #         print(f'win')
-    #     else:
-    #         print(f'continue')
-
-## add inventor value to initial_capa_value to player_country.
-
-## Loop: initial_capa_value > 200
-
-## update carbon_emission

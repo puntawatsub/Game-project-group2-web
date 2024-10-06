@@ -47,7 +47,7 @@ cd Game-project-group2-python && source .venv/bin/activate
 ```
 python spy.py
 ```
-## Player instructions (For Windows Powershell) run these commands one-by-one:
+## Player instructions (For Windows PowerShell) run these commands one-by-one:
 1. Clone this repository
 ```
 git clone https://github.com/YUEZHANG-metro/Game-project-group2-python.git

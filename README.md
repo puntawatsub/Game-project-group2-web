@@ -11,6 +11,33 @@ In this war without smoke, the world is gradually divided into three different r
 
 ♻️The player's main motivation or psychological incentive: as a member of the community, the player must find a team of inventors more quickly while conserving his or her own carbon emissions in order for his or her country to better earn the respect of the rest of the world, and for his or her country's people to have better air quality and water resources.
 
+## Player instructions:
+1. Clone this repository and chance the directory of the current terminal
+```
+git clone https://github.com/YUEZHANG-metro/Game-project-group2-python.git && cd Game-project-group2-python
+```
+2. Create python virtual environment
+```
+python -m venv .venv
+```
+3. Activate python environment
+```
+source .venv/bin/activate
+```
+4. Install the required modules
+```
+pip install -r requirements.txt
+```
+5. Rename and edit the SQL database info
+```
+mv .env.template .env && nano .env
+```
+6. Run the game
+```
+python spy.py
+```
+
+
 ## Contribution instructions:
 1. Create a new branch.
 2. Commit changes to the new branch created.

@@ -9,4 +9,3 @@ def generate_inventor_position(connection,inventor_id):
    position = cursor.fetchall()
    connection.commit()
    return position
-

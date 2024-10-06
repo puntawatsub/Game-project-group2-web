@@ -93,9 +93,9 @@ def competitors(clue_target: int, player_country_name: str, invention_point: dic
             inventor_choice = random.choices([False, True], weights=(4, 10))
 
             if inventor_choice[0]:
-                print(f"{country} have found inventor which chose to cooperate with their work! {country} got {inventor_value} points!")
+                print(f"\033[31m{country} have found inventor which chose to cooperate with their work! {country} got {inventor_value} points!\033[0m")
                 invention_point[country] += int(inventor_value)
-                print(f"Current invention point for {country}: {invention_point[country]}")
+                print(f"\033[31mCurrent invention point for {country}: {invention_point[country]}\033[0m")
             else:
                 print(f"Inventor chose not to cooperate with {country}!")
             competitors_clue_point[f"{country}"] = 0

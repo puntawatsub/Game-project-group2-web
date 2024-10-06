@@ -11,7 +11,7 @@ In this war without smoke, the world is gradually divided into three different r
 
 ♻️The player's main motivation or psychological incentive: as a member of the community, the player must find a team of inventors more quickly while conserving his or her own carbon emissions in order for his or her country to better earn the respect of the rest of the world, and for his or her country's people to have better air quality and water resources.
 
-## Player instructions:
+## Player instructions (For bash terminal):
 1. Clone this repository and chance the directory of the current terminal
 ```
 git clone https://github.com/YUEZHANG-metro/Game-project-group2-python.git && cd Game-project-group2-python

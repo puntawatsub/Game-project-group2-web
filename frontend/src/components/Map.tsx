@@ -27,10 +27,14 @@ export default function Map(props: IonProps) {
 
   const { className, name, polyline, width, material, positions } = props
 
+  if (polyline && positions.length !== 2) {
+    throw Error("Polyline must have exactly two positions")
+  }
+
   return (
     <>
       <div className={className}>
-        <Cesium className={className} polyline={polyline} pins={positions} name={name} positions={positions.length > 0 ? positions[0].position.concat(positions[1].position) : undefined} width={width} material={material} />
+        <Cesium className={className} polyline={polyline} pins={positions} name={name} positions={(positions.length > 0) ? positions[0].position.concat(positions[1].position) : undefined} width={width} material={material} />
       </div>
     </>
   )

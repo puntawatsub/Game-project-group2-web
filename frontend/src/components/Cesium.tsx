@@ -1,5 +1,5 @@
 import { Viewer, Polyline, Entity, Billboard, BillboardGraphics, PolylineGraphics } from "resium";
-import { Ion, VerticalOrigin, PinBuilder, Color, Cartesian3 } from "cesium";
+import { Ion, VerticalOrigin, PinBuilder, Color, Cartesian3, Terrain } from "cesium";
 import React from "react";
 
 Ion.defaultAccessToken =
@@ -25,7 +25,7 @@ export default function Cesium(props: IonProps) {
   const { className, name, polyline, width, material, pins, positions } = props
 
   return (
-      <Viewer className={className} full>
+      <Viewer className={className}>
         {
           polyline && <Entity name={name}>
             <PolylineGraphics positions={Cartesian3.fromDegreesArray(positions!)} width={width} material={material}/>

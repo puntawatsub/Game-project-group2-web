@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Map from "../components/Map";
 import { Color } from "cesium";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,14 @@ import {
     AccordionTrigger,
   } from "@/components/ui/accordion"
 import { ChartBar } from "lucide-react";
+
+
+interface Country {
+    id: number;
+    name: string;
+    clue_id: any;
+    iso_country: string;
+}
 
 const Main = () => {
 
@@ -70,7 +78,17 @@ const Main = () => {
 
     const [accordionValue, setAccordianValue] = useState<string>("")
 
-    const countries = ["Luxembourg", "Singapore", "Ireland", "Norway", "Qatar", "United Arab Emirates", "Switzerland", "United States", "Denmark", "Netherlands", "Brunei", "Iceland", "Austria", "Belgium", "Sweden", "Germany", "Australia", "Bahrain", "Saudi Arabia", "Finland"]
+    // const countries = ["Luxembourg", "Singapore", "Ireland", "Norway", "Qatar", "United Arab Emirates", "Switzerland", "United States", "Denmark", "Netherlands", "Brunei", "Iceland", "Austria", "Belgium", "Sweden", "Germany", "Australia", "Bahrain", "Saudi Arabia", "Finland"]
+
+    const [countries, setCountries] = useState<Country[]>([])
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:8080/random_clue')
+            .then(async (value) => {
+                const results: Country[] = await value.json()
+                setCountries(results)
+            })
+    }, [])
 
     return (
         <div className="flex absolute top-0 bottom-0 left-0 right-0 overflow-hidden">
@@ -91,10 +109,12 @@ const Main = () => {
                 <div className='overflow-y-auto mb-[12rem]'>
                 <Accordion type='single' value={accordionValue} onValueChange={(e) => {setAccordianValue(e)}} collapsible className="w-full">
                     {
-                        countries.filter(e => e.toLowerCase().includes(searchInput.toLowerCase())).map((country, index) => {
+                        countries.filter(e => {
+                            return (e.name.toLowerCase().includes(searchInput.toLowerCase()) || e.iso_country.toLowerCase().includes(searchInput.toLowerCase()))
+                        }).map((country, index) => {
                             return (
-                                <AccordionItem className="px-[1rem]" value={country} key={index}>
-                                    <AccordionTrigger>{country}</AccordionTrigger>
+                                <AccordionItem className="px-[1rem]" value={country.name} key={index}>
+                                    <AccordionTrigger>{country.name}</AccordionTrigger>
                                     <AccordionContent>
                                         <Button onClick={() => {setAccordianValue("")}}>Confirm</Button>
                                     </AccordionContent>

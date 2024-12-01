@@ -20,8 +20,9 @@ from functions.get_inventor import get_inventor
 from functions.generate_inventor_position import generate_inventor_position
 from functions.show_inventor_info import show_inventor_info
 from functions.get_initial_capa_value import get_initial_capa_value
+from functions.return_randomize_clue import return_randomize_clue
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -320,5 +321,15 @@ def prior_main():
 
         inventor_location = None
 
+
+
+@app.route('/random_clue')
+def random_clue():
+    connection = db_connection()
+    result = jsonify(return_randomize_clue(connection))
+    connection.close()
+    return result
+
 if __name__ == "__main__":
-    prior_main()
+    app.run(use_reloader=True, host='127.0.0.1', port=8080)
+    # print(return_randomize_clue(connection))

@@ -21,6 +21,14 @@ from functions.generate_inventor_position import generate_inventor_position
 from functions.show_inventor_info import show_inventor_info
 from functions.get_initial_capa_value import get_initial_capa_value
 
+from flask import Flask, request
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+
+
 load_dotenv()
 
 invention_point = dict()
@@ -39,8 +47,7 @@ def db_connection() -> CMySQLConnection:
     # print(type(connection_1))
     return connection
 
-if __name__ == "__main__":
-
+def prior_main():
     # Initialize variable(s)
     current_coordinate = []
 
@@ -312,3 +319,6 @@ if __name__ == "__main__":
             input("Press enter to continue...")
 
         inventor_location = None
+
+if __name__ == "__main__":
+    pass

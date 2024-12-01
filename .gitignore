@@ -4,3 +4,4 @@ Database.code-workspace
 .env
 .idea
 /frontend/public/cesium
+/backend/.env

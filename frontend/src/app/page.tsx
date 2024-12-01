@@ -24,6 +24,8 @@ import {
     AccordionTrigger,
   } from "@/components/ui/accordion"
 import { ChartBar } from "lucide-react";
+import Alert from "@/components/Alert";
+import { AlertDialogAction } from "@/components/ui/alert-dialog";
 
 
 interface Country {
@@ -31,6 +33,13 @@ interface Country {
     name: string;
     clue_id: any;
     iso_country: string;
+}
+
+interface ErrorDisplay {
+    open: boolean;
+    title: string;
+    description: string;
+    onClose: () => void
 }
 
 const Main = () => {
@@ -53,6 +62,13 @@ const Main = () => {
     const [searchInput, setSearchInput] = useState<string>("")
 
     const [isPolyline, setIsPolyline] = useState(true)
+
+    const [errorDisplay, setErrorDisplay] = useState<ErrorDisplay>({
+        open: false,
+        title: "",
+        description: "",
+        onClose: () => {}
+    })
 
     const newArray = Array.from(Array(100).keys())
 
@@ -87,11 +103,28 @@ const Main = () => {
             .then(async (value) => {
                 const results: Country[] = await value.json()
                 setCountries(results)
+            }).catch((error: Error) => {
+                setErrorDisplay(
+                    {
+                        open: true,
+                        title: "Error",
+                        description: `${error.name}. "${error.message}". Please try again later.`,
+                        onClose: () => {
+                            setErrorDisplay({ ...errorDisplay, open: false })
+                            location.reload()
+                        }
+                    }
+                )
             })
     }, [])
 
     return (
         <div className="flex absolute top-0 bottom-0 left-0 right-0 overflow-hidden">
+            {/* Error Alert */}
+            <Alert title={errorDisplay.title} description={errorDisplay.description} open={errorDisplay.open}>
+                <Button variant='outline' onClick={() => {errorDisplay.onClose()}}>Close</Button>
+            </Alert>
+            {/* End Error Alert */}
             <section className="flex flex-col flex-none w-[18rem] h-full">
                 <div className="p-[1rem]">
                     <div className="w-full font-semibold mb-[0.5rem] h-[50px] justify-between flex items-center">

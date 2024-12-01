@@ -321,4 +321,4 @@ def prior_main():
         inventor_location = None
 
 if __name__ == "__main__":
-    pass
+    prior_main()

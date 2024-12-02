@@ -52,13 +52,9 @@ import {
 
 import Slide from "@mui/material/Slide";
 import FirstEnterDialog from "@/components/FirstEnterDialog";
-
-interface Country {
-  id: number;
-  name: string;
-  clue_id: any;
-  iso_country: string;
-}
+import Country from "@/types/Country";
+import backendURL from "@/components/backendURL";
+import PlayerCountry from "@/types/PlayerCountry";
 
 interface ErrorDisplay {
   open: boolean;
@@ -73,7 +69,8 @@ interface SlideProp {
 }
 
 const Main = () => {
-  const containerRef = useRef<HTMLElement>(null);
+  const [userCountry, setUserCountry] = useState<Country>();
+  const [currentCountry, setCurrentCountryState] = useState<Country>();
 
   const [twoLocations, setTwoLocations] = useState([
     // {
@@ -137,30 +134,58 @@ const Main = () => {
 
   const [namePageVisible, setNamePageVisible] = useState<boolean>(true);
 
+  const [playerCountry, setPlayerCountry] = useState<PlayerCountry[]>([]);
+
+  const setCurrentCountry = (value: Country) => {
+    localStorage.setItem("currentCountry", JSON.stringify(value));
+    setCurrentCountryState(value);
+  };
+
   useEffect(() => {
     // fetch countries and randomize clues
-    fetch("http://127.0.0.1:8080/random_clue")
-      .then(async (value) => {
-        const results: Country[] = await value.json();
-        setCountries(results);
-      })
-      .catch((error: Error) => {
-        setErrorDisplay({
-          open: true,
-          title: "Error",
-          description: `${error.name}. "${error.message}". Please try again later.`,
-          onClose: () => {
-            setErrorDisplay({ ...errorDisplay, open: false });
-            location.reload();
-          },
+    const init = async () => {
+      fetch(`http://localhost:8080/random_clue`)
+        .then(async (value) => {
+          const results: Country[] = await value.json();
+          setCountries(results);
+        })
+        .catch((error: Error) => {
+          setErrorDisplay({
+            open: true,
+            title: "Error",
+            description: `${error.name}. "${error.message}". Please try again later.`,
+            onClose: () => {
+              setErrorDisplay({ ...errorDisplay, open: false });
+              location.reload();
+            },
+          });
         });
-      });
-    // check if user is signed in
-    const user = localStorage.getItem("user");
-    if (user === null) {
-      setIsDialogOpen(true);
-    } else {
-      setUsername(user);
+      fetch(`http://localhost:8080/player_country`)
+        .then(async (response) => {
+          const result: PlayerCountry[] = await response.json();
+          setPlayerCountry(result);
+          sessionStorage.setItem("playerCountry", JSON.stringify(result));
+        })
+        .catch((error: Error) => {
+          alert(error.message);
+        });
+      // check if user is signed in
+      const user = localStorage.getItem("user");
+      if (user === null) {
+        setIsDialogOpen(true);
+      } else {
+        setUsername(user);
+      }
+    };
+    init().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem("currentCountry")) {
+      const currentCountry_temp: Country = JSON.parse(
+        localStorage.getItem("currentCountry")!
+      );
+      setCurrentCountry(currentCountry_temp);
     }
   }, []);
 
@@ -186,8 +211,16 @@ const Main = () => {
       <FirstEnterDialog
         isDialogOpen={isDialogOpen}
         onFinished={(result) => {
-          localStorage.setItem("user", `${result}`);
-          setUsername(result);
+          localStorage.setItem("user", `${result.name}`);
+          setUsername(result.name);
+          const temp_userCountry: Country = {
+            name: playerCountry.find((e) => {
+              return e.iso_country === result.iso_country;
+            })!.name,
+            iso_country: result.iso_country,
+          };
+          setUserCountry(temp_userCountry);
+          setCurrentCountry(temp_userCountry);
           setIsDialogOpen(false);
         }}
       />
@@ -261,7 +294,9 @@ const Main = () => {
               <CardTitle>Current Country:</CardTitle>
             </CardHeader>
             <CardContent>
-              <h1 className="text-xl font-bold">Finland</h1>
+              <h1 className="text-xl font-bold text-nowrap text-ellipsis">
+                {currentCountry?.name}
+              </h1>
             </CardContent>
           </Card>
           <Card className="max-h-[10rem] m-[1rem]">

@@ -21,6 +21,7 @@ from functions.generate_inventor_position import generate_inventor_position
 from functions.show_inventor_info import show_inventor_info
 from functions.get_initial_capa_value import get_initial_capa_value
 from functions.return_randomize_clue import return_randomize_clue
+from functions.return_player_country import return_player_country
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -330,6 +331,12 @@ def random_clue():
     connection.close()
     return result
 
+@app.route('/player_country')
+def player_country():
+    connection = db_connection()
+    result = jsonify(return_player_country(connection))
+    connection.close()
+    return result
+
 if __name__ == "__main__":
     app.run(use_reloader=True, host='127.0.0.1', port=8080)
-    # print(return_randomize_clue(connection))

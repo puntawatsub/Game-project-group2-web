@@ -4,7 +4,7 @@ from mysql.connector.connection_cext import CMySQLConnection
 # from spy import db_connection
 
 # clues: tuple, connection: CMySQLConnection (This used to be the function arguments but no more, kept just for reference
-def return_randomize_clue(connection: CMySQLConnection) -> bool:
+def return_randomize_clue(connection: CMySQLConnection) -> dict:
 
     # Get all possible clues
     cursor = connection.cursor()

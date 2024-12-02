@@ -69,6 +69,7 @@ interface SlideProp {
 }
 
 const Main = () => {
+  const [currentLocation, setCurrentLocation] = useState<number[]>([]);
   const [userCountry, setUserCountry] = useState<Country>();
   const [currentCountry, setCurrentCountryState] = useState<Country>();
 
@@ -136,6 +137,10 @@ const Main = () => {
 
   const [playerCountry, setPlayerCountry] = useState<PlayerCountry[]>([]);
 
+  const [nextCountry, setNextCountry] = useState<Country>();
+
+  const [nextLocation, setNextLocation] = useState<number[]>([]);
+
   const setCurrentCountry = (value: Country) => {
     localStorage.setItem("currentCountry", JSON.stringify(value));
     setCurrentCountryState(value);
@@ -159,9 +164,20 @@ const Main = () => {
     }
   };
 
-  // const getAirportLocation = async (icao: string): Promise<number[]> => {
-
-  // };
+  const getAirportLocation = async (icao: string): Promise<number[]> => {
+    let formData = new FormData();
+    formData.append("ICAO", icao);
+    try {
+      const fetch_result = await fetch(`${backendURL}/request_location`, {
+        method: "POST",
+        body: formData,
+      });
+      const json_result = await fetch_result.json();
+      return [json_result["latitude_deg"], json_result["longitude_deg"]];
+    } catch (error) {
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // fetch countries and randomize clues
@@ -216,6 +232,9 @@ const Main = () => {
         localStorage.getItem("currentCountry")!
       );
       setCurrentCountry(currentCountry_temp);
+      getAirportLocation(currentCountry_temp.ICAO).then((location) => {
+        setCurrentLocation(location);
+      });
     }
   }, []);
 
@@ -255,6 +274,9 @@ const Main = () => {
             };
             setUserCountry(temp_userCountry);
             setCurrentCountry(temp_userCountry);
+            getAirportLocation(ICAO_result).then((location_result) => {
+              setCurrentLocation(location_result);
+            });
             setIsDialogOpen(false);
           });
         }}
@@ -368,7 +390,10 @@ const Main = () => {
         ) : !currentCountry ? (
           <p>Map Placeholder</p>
         ) : (
-          <p>At {currentCountry.ICAO}</p>
+          <p>
+            At {currentCountry.ICAO}{" "}
+            {`[${currentLocation[0]}, ${currentLocation[1]}]`}
+          </p>
         )}
       </div>
       {/* <Map className="flex flex-1 h-prevent-footer" positions={twoLocations} width={5} material={Color.RED}

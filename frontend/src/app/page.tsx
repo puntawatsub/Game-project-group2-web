@@ -141,10 +141,32 @@ const Main = () => {
     setCurrentCountryState(value);
   };
 
+  const getPlayerCountryICAO = async (iso_country: string): Promise<string> => {
+    let formData = new FormData();
+    formData.append("iso_country", iso_country);
+    try {
+      const fetch_result = await fetch(
+        `${backendURL}/get_ident_player_country`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const json_result = await fetch_result.json();
+      return json_result["ICAO"];
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // const getAirportLocation = async (icao: string): Promise<number[]> => {
+
+  // };
+
   useEffect(() => {
     // fetch countries and randomize clues
     const init = async () => {
-      fetch(`http://localhost:8080/random_clue`)
+      fetch(`${backendURL}/random_clue`)
         .then(async (value) => {
           const results: Country[] = await value.json();
           setCountries(results);
@@ -160,14 +182,22 @@ const Main = () => {
             },
           });
         });
-      fetch(`http://localhost:8080/player_country`)
+      fetch(`${backendURL}/player_country`)
         .then(async (response) => {
           const result: PlayerCountry[] = await response.json();
           setPlayerCountry(result);
           sessionStorage.setItem("playerCountry", JSON.stringify(result));
         })
         .catch((error: Error) => {
-          alert(error.message);
+          setErrorDisplay({
+            open: true,
+            title: "Error",
+            description: `${error.name}. "${error.message}". Please try again later.`,
+            onClose: () => {
+              setErrorDisplay({ ...errorDisplay, open: false });
+              location.reload();
+            },
+          });
         });
       // check if user is signed in
       const user = localStorage.getItem("user");
@@ -213,15 +243,20 @@ const Main = () => {
         onFinished={(result) => {
           localStorage.setItem("user", `${result.name}`);
           setUsername(result.name);
-          const temp_userCountry: Country = {
-            name: playerCountry.find((e) => {
-              return e.iso_country === result.iso_country;
-            })!.name,
-            iso_country: result.iso_country,
-          };
-          setUserCountry(temp_userCountry);
-          setCurrentCountry(temp_userCountry);
-          setIsDialogOpen(false);
+          let formData = new FormData();
+          formData.append("iso_country", result.iso_country);
+          getPlayerCountryICAO(result.iso_country).then(async (ICAO_result) => {
+            const temp_userCountry: Country = {
+              name: playerCountry.find((e) => {
+                return e.iso_country === result.iso_country;
+              })!.name,
+              iso_country: result.iso_country,
+              ICAO: ICAO_result,
+            };
+            setUserCountry(temp_userCountry);
+            setCurrentCountry(temp_userCountry);
+            setIsDialogOpen(false);
+          });
         }}
       />
       {/* End if user is not logged in */}
@@ -330,8 +365,10 @@ const Main = () => {
       <div className="flex flex-1 justify-center items-center h-prevent-footer h-full w-full bg-black text-white">
         {accordionValue.length !== 0 ? (
           <p>Go to {accordionValue}</p>
-        ) : (
+        ) : !currentCountry ? (
           <p>Map Placeholder</p>
+        ) : (
+          <p>At {currentCountry.ICAO}</p>
         )}
       </div>
       {/* <Map className="flex flex-1 h-prevent-footer" positions={twoLocations} width={5} material={Color.RED}

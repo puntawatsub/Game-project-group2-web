@@ -22,6 +22,7 @@ from functions.show_inventor_info import show_inventor_info
 from functions.get_initial_capa_value import get_initial_capa_value
 from functions.return_randomize_clue import return_randomize_clue
 from functions.return_player_country import return_player_country
+from functions.return_airport_from_ident_player_country import return_airport_from_ident_player_country
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -337,6 +338,22 @@ def player_country():
     result = jsonify(return_player_country(connection))
     connection.close()
     return result
+
+@app.route('/request_location', methods=['POST'])
+def request_location():
+    # return location from airport ICAO
+    icao = request.form.get('ICAO')
+
+
+@app.route('/get_ident_player_country', methods=['POST'])
+def get_ident_player_country():
+    iso_country = request.form.get('iso_country')
+    print(iso_country)
+    connection = db_connection()
+    result = jsonify(return_airport_from_ident_player_country(connection, iso_country))
+    connection.close()
+    return result
+
 
 if __name__ == "__main__":
     app.run(use_reloader=True, host='127.0.0.1', port=8080)

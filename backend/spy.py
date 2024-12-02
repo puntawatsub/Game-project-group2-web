@@ -24,6 +24,7 @@ from functions.return_randomize_clue import return_randomize_clue
 from functions.return_player_country import return_player_country
 from functions.return_airport_from_ident_player_country import return_airport_from_ident_player_country
 from functions.return_airport_location import return_airport_location
+from functions.return_ident_game_country import return_ident_game_country
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -354,12 +355,32 @@ def request_location():
 @app.route('/get_ident_player_country', methods=['POST'])
 def get_ident_player_country():
     iso_country = request.form.get('iso_country')
-    print(iso_country)
+    # print(iso_country)
     connection = db_connection()
     result = jsonify(return_airport_from_ident_player_country(connection, iso_country))
     connection.close()
     return result
 
+@app.route('/get_ident_game_country', methods=['POST'])
+def get_ident_game_country():
+    iso_country = request.form.get('iso_country')
+    connection = db_connection()
+    result = jsonify(return_ident_game_country(connection, iso_country))
+    connection.close()
+    return result
+
+@app.route('/calculate_carbon', methods=['POST'])
+def calculate_carbon():
+    latitude1 = request.form.get('latitude1')
+    latitude2 = request.form.get('latitude2')
+    longitude1 = request.form.get('longitude1')
+    longitude2 = request.form.get('longitude2')
+    distance = get_distance((latitude1, longitude1), (latitude2, longitude2))
+    carbon = calculate_carbon_emission(distance)
+    temp = {
+        "emission": carbon
+    }
+    return jsonify(temp)
 
 if __name__ == "__main__":
     app.run(use_reloader=True, host='127.0.0.1', port=8080)

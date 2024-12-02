@@ -60,12 +60,17 @@ interface ErrorDisplay {
   open: boolean;
   title: string;
   description: string;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 interface SlideProp {
   in: boolean;
   direction?: "left" | "right" | "up" | "down" | undefined;
+}
+
+interface NextLocation {
+  coordinate: number[];
+  ICAO: string;
 }
 
 const Main = () => {
@@ -139,7 +144,7 @@ const Main = () => {
 
   const [nextCountry, setNextCountry] = useState<Country>();
 
-  const [nextLocation, setNextLocation] = useState<number[]>([]);
+  const [nextLocation, setNextLocation] = useState<NextLocation>();
 
   const setCurrentCountry = (value: Country) => {
     localStorage.setItem("currentCountry", JSON.stringify(value));
@@ -157,6 +162,21 @@ const Main = () => {
           body: formData,
         }
       );
+      const json_result = await fetch_result.json();
+      return json_result["ICAO"];
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getGameCountryICAO = async (iso_country: string): Promise<string> => {
+    let formData = new FormData();
+    formData.append("iso_country", iso_country);
+    try {
+      const fetch_result = await fetch(`${backendURL}/get_ident_game_country`, {
+        method: "POST",
+        body: formData,
+      });
       const json_result = await fetch_result.json();
       return json_result["ICAO"];
     } catch (error) {
@@ -232,7 +252,7 @@ const Main = () => {
         localStorage.getItem("currentCountry")!
       );
       setCurrentCountry(currentCountry_temp);
-      getAirportLocation(currentCountry_temp.ICAO).then((location) => {
+      getAirportLocation(currentCountry_temp.ICAO!).then((location) => {
         setCurrentLocation(location);
       });
     }
@@ -249,7 +269,7 @@ const Main = () => {
         <Button
           variant="outline"
           onClick={() => {
-            errorDisplay.onClose();
+            errorDisplay.onClose && errorDisplay.onClose();
           }}
         >
           Close
@@ -330,14 +350,58 @@ const Main = () => {
                     value={country.name}
                     key={index}
                   >
-                    <AccordionTrigger>{country.name}</AccordionTrigger>
+                    <AccordionTrigger
+                      onClick={() => {
+                        if (accordionValue === country.name) {
+                          return;
+                        }
+                        getGameCountryICAO(country.iso_country)
+                          .then((icao) => {
+                            getAirportLocation(icao)
+                              .then((location) => {
+                                setNextLocation({
+                                  ICAO: icao,
+                                  coordinate: location,
+                                });
+                                setNextCountry({ ...country, ICAO: icao });
+                              })
+                              .catch((error: Error) => {
+                                setErrorDisplay({
+                                  open: true,
+                                  title: "Error",
+                                  description: `${error.name}: ${error.message}`,
+                                });
+                              });
+                          })
+                          .catch((error: Error) => {
+                            setErrorDisplay({
+                              title: "Error",
+                              description: `${error.name}: ${error.message}`,
+                              open: true,
+                            });
+                          });
+                      }}
+                    >
+                      {country.name}
+                    </AccordionTrigger>
                     <AccordionContent>
                       <Button
                         onClick={() => {
+                          console.log(nextLocation);
+                          setCurrentCountry({
+                            ...country,
+                            ICAO: nextLocation!.ICAO,
+                          });
+                          getAirportLocation(nextCountry!.ICAO!).then(
+                            (location) => {
+                              setCurrentLocation(location);
+                            }
+                          );
                           setAccordianValue("");
+                          setSearchInput("");
                         }}
                       >
-                        Confirm
+                        Go to {country.name}
                       </Button>
                     </AccordionContent>
                   </AccordionItem>
@@ -386,7 +450,7 @@ const Main = () => {
       </section>
       <div className="flex flex-1 justify-center items-center h-prevent-footer h-full w-full bg-black text-white">
         {accordionValue.length !== 0 ? (
-          <p>Go to {accordionValue}</p>
+          <p>{`[${currentLocation[0]}, ${currentLocation[1]}] -> [${nextLocation?.coordinate[0]}, ${nextLocation?.coordinate[1]}]`}</p>
         ) : !currentCountry ? (
           <p>Map Placeholder</p>
         ) : (

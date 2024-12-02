@@ -14,6 +14,8 @@ def return_airport_from_ident_player_country(connection: CMySQLConnection, iso_c
     cursor.execute(sql, payload)
     result = cursor.fetchall()
 
+    print(result)
+
     return {
         "ICAO": result[0][0]
         }

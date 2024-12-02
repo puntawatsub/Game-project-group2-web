@@ -4,5 +4,5 @@ export default interface Country {
   // change later
   clue_id?: number | null;
   iso_country: string;
-  ICAO: string;
+  ICAO?: string;
 }

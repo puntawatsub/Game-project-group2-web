@@ -1,5 +1,5 @@
 export default interface PlayerCountry {
-  initial_capa_value: number;
+  invention: number;
   iso_country: string;
   player_country_id: number;
   start_airport_ident: string;

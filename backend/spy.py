@@ -25,9 +25,11 @@ from functions.return_player_country import return_player_country
 from functions.return_airport_from_ident_player_country import return_airport_from_ident_player_country
 from functions.return_airport_location import return_airport_location
 from functions.return_ident_game_country import return_ident_game_country
+from functions.return_competitor import return_competitor
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -253,7 +255,9 @@ def prior_main():
                 print("Taxiing around the same airport cost your carbon credit and a fine!: +1400 Carbon Emission")
                 input("Press enter to continue...")
 
-            # run competitors turn
+            # MARK: run competitors turn
+            print("competitors_location: " + str(competitors_location))
+            print("carbon_emission: " + str(carbon_emission))
             competitors(clue_target, player_country_name, invention_point, carbon_emission, competitors_location, competitors_clue_point, connection)
             input("Press enter to continue...")
     # end loop
@@ -382,5 +386,29 @@ def calculate_carbon():
     }
     return jsonify(temp)
 
+@app.route('/get_limit')
+def get_limit():
+    # set the initial carbon_limit (for now every player is the same)
+    carbon_limit = 10000
+
+    # target clue point
+    clue_target = 20
+
+    # invention point target
+    invention_target = 200
+
+    return jsonify({
+        "carbon_limit": carbon_limit,
+        "clue_target": clue_target,
+        "invention_target": invention_target
+    })
+
+# @app.route('/run_competition', methods=['POST'])
+# def run_competition():
+    
+
+
+
 if __name__ == "__main__":
     app.run(use_reloader=True, host='127.0.0.1', port=8080)
+    # prior_main()

@@ -55,6 +55,11 @@ import FirstEnterDialog from "@/components/FirstEnterDialog";
 import Country from "@/types/Country";
 import backendURL from "@/components/backendURL";
 import PlayerCountry from "@/types/PlayerCountry";
+import {
+  getAirportLocation,
+  getGameCountryICAO,
+  getPlayerCountryICAO,
+} from "@/components/getFetch";
 
 interface ErrorDisplay {
   open: boolean;
@@ -71,6 +76,17 @@ interface SlideProp {
 interface NextLocation {
   coordinate: number[];
   ICAO: string;
+}
+
+interface LimitFetch {
+  carbon_limit: number;
+  clue_target: number;
+  invention_target: number;
+}
+
+interface NumberChartData {
+  number: number;
+  total: number;
 }
 
 const Main = () => {
@@ -108,9 +124,16 @@ const Main = () => {
 
   const newArray = Array.from(Array(100).keys());
 
-  const carbonEmissionData = [{ number: 8000, total: 10000 }];
-  const cluePointData = [{ number: 3, total: 20 }];
-  const capabilityData = [{ number: 65, total: 200 }];
+  // Chart data
+  const [carbonEmissionData, setCarbonEmissionData] = useState<
+    NumberChartData[]
+  >([{ number: 0, total: 0 }]);
+  const [cluePointData, setCluePointData] = useState<NumberChartData[]>([
+    { number: 0, total: 0 },
+  ]);
+  const [capabilityData, setCapabilityData] = useState<NumberChartData[]>([
+    { number: 0, total: 0 },
+  ]);
 
   const carbonChartConfig = {
     number: {
@@ -146,56 +169,30 @@ const Main = () => {
 
   const [nextLocation, setNextLocation] = useState<NextLocation>();
 
+  // limits
+  const [carbonLimit, setCarbonLimit] = useState<number>(0);
+  const [inventionTarget, setInventionTarget] = useState<number>(0);
+  const [clueTarget, setClueTarget] = useState<number>(0);
+
   const setCurrentCountry = (value: Country) => {
     localStorage.setItem("currentCountry", JSON.stringify(value));
     setCurrentCountryState(value);
   };
 
-  const getPlayerCountryICAO = async (iso_country: string): Promise<string> => {
-    let formData = new FormData();
-    formData.append("iso_country", iso_country);
-    try {
-      const fetch_result = await fetch(
-        `${backendURL}/get_ident_player_country`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const json_result = await fetch_result.json();
-      return json_result["ICAO"];
-    } catch (error) {
-      throw error;
-    }
+  const updateScore = () => {
+    const temp_json = {
+      carbon: carbonEmissionData[0].number,
+      invention: capabilityData[0].number,
+      clue: cluePointData[0].number,
+    };
+    localStorage.setItem("score", JSON.stringify(temp_json));
   };
 
-  const getGameCountryICAO = async (iso_country: string): Promise<string> => {
-    let formData = new FormData();
-    formData.append("iso_country", iso_country);
-    try {
-      const fetch_result = await fetch(`${backendURL}/get_ident_game_country`, {
-        method: "POST",
-        body: formData,
-      });
-      const json_result = await fetch_result.json();
-      return json_result["ICAO"];
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const getAirportLocation = async (icao: string): Promise<number[]> => {
-    let formData = new FormData();
-    formData.append("ICAO", icao);
-    try {
-      const fetch_result = await fetch(`${backendURL}/request_location`, {
-        method: "POST",
-        body: formData,
-      });
-      const json_result = await fetch_result.json();
-      return [json_result["latitude_deg"], json_result["longitude_deg"]];
-    } catch (error) {
-      throw error;
+  const getScore = () => {
+    if (localStorage.getItem("score")) {
+      const temp_json: { carbon: number; invention: number; clue: number } =
+        JSON.parse(localStorage.getItem("score")!);
+      setCarbonEmissionData([{ number: temp_json.carbon, total: 0 }]);
     }
   };
 
@@ -223,6 +220,36 @@ const Main = () => {
           const result: PlayerCountry[] = await response.json();
           setPlayerCountry(result);
           sessionStorage.setItem("playerCountry", JSON.stringify(result));
+          if (!localStorage.getItem("user")) {
+            localStorage.setItem("playerCountry", JSON.stringify(result));
+          }
+        })
+        .catch((error: Error) => {
+          setErrorDisplay({
+            open: true,
+            title: "Error",
+            description: `${error.name}. "${error.message}". Please try again later.`,
+            onClose: () => {
+              setErrorDisplay({ ...errorDisplay, open: false });
+              location.reload();
+            },
+          });
+        });
+      fetch(`${backendURL}/get_limit`)
+        .then(async (response) => {
+          const limit_json: LimitFetch = await response.json();
+          setCarbonLimit(limit_json.carbon_limit);
+          setClueTarget(limit_json.clue_target);
+          setInventionTarget(limit_json.invention_target);
+          setCluePointData([
+            { ...cluePointData[0], total: limit_json.clue_target },
+          ]);
+          setCapabilityData([
+            { ...capabilityData[0], total: limit_json.invention_target },
+          ]);
+          setCarbonEmissionData([
+            { ...carbonEmissionData[0], total: limit_json.carbon_limit },
+          ]);
         })
         .catch((error: Error) => {
           setErrorDisplay({
@@ -387,7 +414,7 @@ const Main = () => {
                     <AccordionContent>
                       <Button
                         onClick={() => {
-                          console.log(nextLocation);
+                          // console.log(nextLocation);
                           setCurrentCountry({
                             ...country,
                             ICAO: nextLocation!.ICAO,

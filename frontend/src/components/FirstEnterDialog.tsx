@@ -75,8 +75,6 @@ const FirstEnterDialog = (props: FirstEnterDialogProps) => {
         };
       });
       setDropDownChoices(temp_array);
-    } else {
-      throw Error("There is no playerCountry in SessionStorage");
     }
   }, []);
 

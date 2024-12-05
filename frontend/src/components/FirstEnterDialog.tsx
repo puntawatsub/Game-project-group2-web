@@ -64,18 +64,23 @@ const FirstEnterDialog = (props: FirstEnterDialogProps) => {
   };
 
   useEffect(() => {
-    if (sessionStorage.getItem("playerCountry")) {
-      const playerCountry: PlayerCountry[] = JSON.parse(
-        sessionStorage.getItem("playerCountry")!
-      );
-      const temp_array: DropDownData[] = playerCountry.map((country) => {
-        return {
-          value: country.iso_country,
-          name: country.name,
-        };
+    fetch(`${backendURL}/player_country`)
+      .then(async (response) => {
+        const playerCountry: PlayerCountry[] = await response.json();
+        if (!localStorage.getItem("user")) {
+          localStorage.setItem("playerCountry", JSON.stringify(playerCountry));
+        }
+        const temp_array: DropDownData[] = playerCountry.map((country) => {
+          return {
+            value: country.iso_country,
+            name: country.name,
+          };
+        });
+        setDropDownChoices(temp_array);
+      })
+      .catch((error: Error) => {
+        alert("Fetch error");
       });
-      setDropDownChoices(temp_array);
-    }
   }, []);
 
   return (
@@ -191,6 +196,7 @@ const FirstEnterDialog = (props: FirstEnterDialogProps) => {
                     name: nameField,
                     iso_country: dropDownCountryValue,
                   };
+                  console.log(return_value);
                   onFinished && onFinished(return_value);
                 } else {
                   alert("Please select your country first!");

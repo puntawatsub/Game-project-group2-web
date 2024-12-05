@@ -25,7 +25,9 @@ from functions.return_player_country import return_player_country
 from functions.return_airport_from_ident_player_country import return_airport_from_ident_player_country
 from functions.return_airport_location import return_airport_location
 from functions.return_ident_game_country import return_ident_game_country
-from functions.return_competitor import return_competitor
+from functions.return_clue_from_id import return_clue_from_id
+from functions.return_inventor import return_inventor
+# from functions.return_competitor import return_competitor
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -42,6 +44,15 @@ invention_point = dict()
 carbon_emission = dict()
 competitors_location = dict()
 competitors_clue_point = dict()
+
+# set the initial carbon_limit (for now every player is the same)
+carbon_limit = 10000
+
+# target clue point
+clue_target = 20
+
+# invention point target
+invention_target = 200
 
 # function to establish new db connection
 def db_connection() -> CMySQLConnection:
@@ -341,7 +352,7 @@ def random_clue():
 @app.route('/player_country')
 def player_country():
     connection = db_connection()
-    result = jsonify(return_player_country(connection))
+    result = jsonify(return_player_country(connection, carbon_limit))
     connection.close()
     return result
 
@@ -388,15 +399,6 @@ def calculate_carbon():
 
 @app.route('/get_limit')
 def get_limit():
-    # set the initial carbon_limit (for now every player is the same)
-    carbon_limit = 10000
-
-    # target clue point
-    clue_target = 20
-
-    # invention point target
-    invention_target = 200
-
     return jsonify({
         "carbon_limit": carbon_limit,
         "clue_target": clue_target,
@@ -406,7 +408,18 @@ def get_limit():
 # @app.route('/run_competition', methods=['POST'])
 # def run_competition():
     
+@app.route('/get_clue_from_id', methods=['POST'])
+def get_clue_from_id():
+    connection = db_connection()
+    id = request.form.get('id')
+    result = jsonify(return_clue_from_id(connection, id))
+    return result
 
+@app.route('/get_inventor')
+def inventor_get():
+    connection = db_connection()
+    result = jsonify(return_inventor(connection))
+    return result
 
 
 if __name__ == "__main__":

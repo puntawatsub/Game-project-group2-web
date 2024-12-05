@@ -58,6 +58,7 @@ import PlayerCountry from "@/types/PlayerCountry";
 import {
   getAirportLocation,
   getGameCountryICAO,
+  getNewPlayerCountry,
   getPlayerCountryICAO,
 } from "@/components/getFetch";
 
@@ -163,8 +164,6 @@ const Main = () => {
 
   const [namePageVisible, setNamePageVisible] = useState<boolean>(true);
 
-  const [playerCountry, setPlayerCountry] = useState<PlayerCountry[]>([]);
-
   const [nextCountry, setNextCountry] = useState<Country>();
 
   const [nextLocation, setNextLocation] = useState<NextLocation>();
@@ -203,6 +202,7 @@ const Main = () => {
         .then(async (value) => {
           const results: Country[] = await value.json();
           setCountries(results);
+          sessionStorage.setItem("gameCountries", JSON.stringify(results));
         })
         .catch((error: Error) => {
           setErrorDisplay({
@@ -215,26 +215,7 @@ const Main = () => {
             },
           });
         });
-      fetch(`${backendURL}/player_country`)
-        .then(async (response) => {
-          const result: PlayerCountry[] = await response.json();
-          setPlayerCountry(result);
-          sessionStorage.setItem("playerCountry", JSON.stringify(result));
-          if (!localStorage.getItem("user")) {
-            localStorage.setItem("playerCountry", JSON.stringify(result));
-          }
-        })
-        .catch((error: Error) => {
-          setErrorDisplay({
-            open: true,
-            title: "Error",
-            description: `${error.name}. "${error.message}". Please try again later.`,
-            onClose: () => {
-              setErrorDisplay({ ...errorDisplay, open: false });
-              location.reload();
-            },
-          });
-        });
+
       fetch(`${backendURL}/get_limit`)
         .then(async (response) => {
           const limit_json: LimitFetch = await response.json();
@@ -312,19 +293,37 @@ const Main = () => {
           let formData = new FormData();
           formData.append("iso_country", result.iso_country);
           getPlayerCountryICAO(result.iso_country).then(async (ICAO_result) => {
-            const temp_userCountry: Country = {
-              name: playerCountry.find((e) => {
-                return e.iso_country === result.iso_country;
-              })!.name,
-              iso_country: result.iso_country,
-              ICAO: ICAO_result,
-            };
-            setUserCountry(temp_userCountry);
-            setCurrentCountry(temp_userCountry);
-            getAirportLocation(ICAO_result).then((location_result) => {
-              setCurrentLocation(location_result);
-            });
-            setIsDialogOpen(false);
+            getNewPlayerCountry()
+              .then((playerCountry) => {
+                const temp_userCountry: Country = {
+                  name: playerCountry.find((e) => {
+                    return e.iso_country === result.iso_country;
+                  })!.name,
+                  iso_country: result.iso_country,
+                  ICAO: ICAO_result,
+                  clue_id: null,
+                };
+                setUserCountry(temp_userCountry);
+                setCurrentCountry(temp_userCountry);
+                localStorage.setItem(
+                  "currentPlayerCountry",
+                  result.iso_country
+                );
+                getAirportLocation(ICAO_result).then((location_result) => {
+                  setCurrentLocation(location_result);
+                });
+                setIsDialogOpen(false);
+              })
+              .catch((error: Error) => {
+                setErrorDisplay({
+                  open: true,
+                  title: "Error",
+                  description: error.message,
+                  onClose: () => {
+                    setErrorDisplay({ ...errorDisplay, open: false });
+                  },
+                });
+              });
           });
         }}
       />
@@ -487,8 +486,13 @@ const Main = () => {
           </p>
         )}
       </div>
-      {/* <Map className="flex flex-1 h-prevent-footer" positions={twoLocations} width={5} material={Color.RED}
-                polyline={isPolyline}></Map> */}
+      {/* <Map
+        className="flex flex-1 h-prevent-footer"
+        positions={twoLocations}
+        width={5}
+        material={Color.RED}
+        polyline={isPolyline}
+      ></Map> */}
     </div>
   );
 };

@@ -1,4 +1,6 @@
+import Country from "@/types/Country";
 import backendURL from "./backendURL";
+import PlayerCountry from "@/types/PlayerCountry";
 
 export const getPlayerCountryICAO = async (
   iso_country: string
@@ -49,7 +51,7 @@ export const getAirportLocation = async (icao: string): Promise<number[]> => {
   }
 };
 
-export const fetchCarbonEmission = async (
+export const getCarbonEmission = async (
   location1: number[],
   location2: number[]
 ): Promise<number> => {
@@ -66,6 +68,56 @@ export const fetchCarbonEmission = async (
     const result = await resolve.json();
     return parseFloat(result["emission"]);
   } catch (error: any) {
+    throw error;
+  }
+};
+
+export const getNewPlayerCountry = async (): Promise<PlayerCountry[]> => {
+  try {
+    const resolve = await fetch(`${backendURL}/player_country`);
+    const result: PlayerCountry[] = await resolve.json();
+    return result;
+  } catch (error: any) {
+    throw Error("Cannot fetch player country data");
+  }
+};
+
+export const getGameCountry = () => {
+  fetch(`${backendURL}/random_clue`)
+    .then(async (value) => {
+      const results: Country[] = await value.json();
+      sessionStorage.setItem("gameCountries", JSON.stringify(results));
+    })
+    .catch((error: Error) => {
+      throw error;
+    });
+};
+
+export const getClueFromId = async (clue_id: number): Promise<Clue> => {
+  interface ClueFetchResult {
+    clue_id: number;
+    clue_point: number;
+    clue_type: "Key Person" | "General Informants" | "Passer-by";
+  }
+  try {
+    const resolve = await fetch(`${backendURL}/get_clue_from_id`);
+    const result: ClueFetchResult = await resolve.json();
+    const return_construct: Clue = {
+      type: result.clue_type,
+      points: result.clue_point,
+    };
+    return return_construct;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getInventors = async (): Promise<Inventor[]> => {
+  try {
+    const resolve = await fetch(`${backendURL}/get_inventor`);
+    const result: Inventor[] = await resolve.json();
+    return result;
+  } catch (error) {
     throw error;
   }
 };

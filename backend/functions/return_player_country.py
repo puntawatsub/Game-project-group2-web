@@ -1,6 +1,6 @@
 from mysql.connector.connection_cext import CMySQLConnection
 
-def return_player_country(connection: CMySQLConnection) -> dict:
+def return_player_country(connection: CMySQLConnection, carbon_limit: int) -> dict:
 
     # Get player_country from database
     cursor = connection.cursor()
@@ -15,9 +15,11 @@ def return_player_country(connection: CMySQLConnection) -> dict:
         temp_dict = {
             "player_country_id": player_country[0],
             "iso_country": player_country[1],
-            "initial_capa_value": player_country[2],
-            "start_airport_ident": player_country[3],
-            "name": player_country[4]
+            "invention": player_country[2],
+            "ICAO": player_country[3],
+            "name": player_country[4],
+            "clue": 0,
+            "carbon": 0
         }
         player_countries.append(temp_dict)
 

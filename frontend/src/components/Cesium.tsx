@@ -5,6 +5,7 @@ import {
   Billboard,
   BillboardGraphics,
   PolylineGraphics,
+  ImageryLayer,
 } from "resium";
 import {
   Ion,
@@ -13,6 +14,7 @@ import {
   Color,
   Cartesian3,
   Terrain,
+  UrlTemplateImageryProvider,
 } from "cesium";
 import React from "react";
 
@@ -37,8 +39,13 @@ export default function Cesium(props: IonProps) {
 
   const { className, name, polyline, width, material, pins, positions } = props;
 
+  const imageryProvider = new UrlTemplateImageryProvider({
+    url: "https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}",
+  });
+
   return (
     <Viewer className={className}>
+      <ImageryLayer imageryProvider={imageryProvider}></ImageryLayer>
       {polyline && (
         <Entity name={name}>
           <PolylineGraphics

@@ -213,6 +213,26 @@ const Main = () => {
     setCurrentCountryState(value);
   };
 
+  const getClueCountries = () => {
+    fetch(`${backendURL}/random_clue`)
+      .then(async (value) => {
+        const results: Country[] = await value.json();
+        setCountries(results);
+        sessionStorage.setItem("gameCountries", JSON.stringify(results));
+      })
+      .catch((error: Error) => {
+        setErrorDisplay({
+          open: true,
+          title: "Error",
+          description: `${error.name}. "${error.message}". Please try again later.`,
+          onClose: () => {
+            setErrorDisplay({ ...errorDisplay, open: false });
+            location.reload();
+          },
+        });
+      });
+  };
+
   const updateScore = () => {
     const temp_json = {
       carbon: carbonEmissionData[0].number,
@@ -382,16 +402,9 @@ const Main = () => {
 
     if (carbon_result > carbonLimit) {
       // carbon exceeds
-      setErrorDisplay({
-        open: true,
-        title: "Game Over",
-        description: "Carbon limit exceeded! Game over.",
-        onClose: () => {
-          setErrorDisplay({ ...errorDisplay, open: false });
-          localStorage.clear();
-          location.reload();
-        },
-      });
+      alert("You've exceed carbon limit!");
+      localStorage.clear();
+      location.reload();
     }
     ICAO_result = nextCountry!.ICAO!;
     message.push(
@@ -438,6 +451,22 @@ const Main = () => {
       });
     }
     async function finishing() {
+      if (invention_result >= inventionTarget) {
+        console.log("You win the game, implement it here");
+      }
+      if (carbon_result > carbonLimit) {
+        console.log("You loses");
+        setErrorDisplay({
+          open: true,
+          title: "Game Over",
+          description: "Carbon limit exceeded! Game over.",
+          onClose: () => {
+            setErrorDisplay({ ...errorDisplay, open: false });
+            localStorage.clear();
+            location.reload();
+          },
+        });
+      }
       result_construct.push({
         invention: invention_result,
         iso_country: this_playerCountry!.iso_country,
@@ -480,68 +509,66 @@ const Main = () => {
         carbonLimit,
         inventionTarget
       );
-      setTimeout(() => {
-        console.log(competitor_response.length);
-        if (competitor_response[0] === "winner") {
-          // someone wins
-          setErrorDisplay({
-            open: true,
-            title: "A country wins",
-            description: `${competitor_response[1]} wins the game!`,
-            onClose: () => {
-              setErrorDisplay({ ...errorDisplay, open: false });
-              localStorage.clear();
-              location.reload();
-            },
-          });
-        } else {
-          // no one wins yet
-          for (const response of competitor_response as any[]) {
-            const competitor: CompetitorResponse = response;
-            if (!(competitor.data.name in loser)) {
-              result_construct.push(competitor.data);
-              console.log(competitor.data);
-              message = message.concat(competitor.message);
-              console.log(competitor.message);
-            }
-            message = message.concat(competitor.message);
+      console.log(competitor_response.length);
+      if (competitor_response[0] === "winner") {
+        console.log("wins");
+        // someone wins
+        setErrorDisplay({
+          open: true,
+          title: "A country wins",
+          description: `${competitor_response[1]} wins the game!`,
+          onClose: () => {
+            setErrorDisplay({ ...errorDisplay, open: false });
+            localStorage.clear();
+            location.reload();
+          },
+        });
+      } else {
+        // no one wins yet
+        for (const response of competitor_response as any[]) {
+          const competitor: CompetitorResponse = response;
+          if (!loser.includes(competitor.data.name)) {
+            result_construct.push(competitor.data);
+            console.log(competitor.data);
+            console.log(competitor.message);
+            console.log(`${competitor.data.name} is not a loser`);
+            console.log(loser);
           }
-          setCurrentCountry({
-            ...country,
-            ICAO: nextLocation!.ICAO,
-          });
-          setPlayerCountries(result_construct);
-          localStorage.setItem(
-            "playerCountry",
-            JSON.stringify(result_construct)
-          );
-          let all_messages = "";
-          for (const m of message) {
-            if (message.indexOf(m) === 0) {
-              all_messages = m;
-            } else {
-              all_messages += `\n\n${m}`;
-            }
+          message = message.concat(competitor.message);
+        }
+        setCurrentCountry({
+          ...country,
+          ICAO: nextLocation!.ICAO,
+        });
+        setPlayerCountries(result_construct);
+        localStorage.setItem("playerCountry", JSON.stringify(result_construct));
+        let all_messages = "";
+        for (const m of message) {
+          if (message.indexOf(m) === 0) {
+            all_messages = m;
+          } else {
+            all_messages += `\n\n${m}`;
           }
-          setErrorDisplay({
-            open: true,
-            title: "Turn Summary",
-            description: all_messages,
-            onClose: () => {
-              setErrorDisplay({ ...errorDisplay, open: false });
-            },
-          });
         }
-        if (localStorage.getItem("message")) {
-          let temp_message: string[] = JSON.parse(
-            localStorage.getItem("message")!
-          );
-          temp_message = temp_message.concat(message);
-          localStorage.setItem("message", JSON.stringify(temp_message));
-        } else {
-          localStorage.setItem("message", JSON.stringify(message));
-        }
-      }, 1);
+        setErrorDisplay({
+          open: true,
+          title: "Turn Summary",
+          description: all_messages,
+          onClose: () => {
+            setErrorDisplay({ ...errorDisplay, open: false });
+          },
+        });
+      }
+      if (localStorage.getItem("message")) {
+        let temp_message: string[] = JSON.parse(
+          localStorage.getItem("message")!
+        );
+        temp_message = temp_message.concat(message);
+        localStorage.setItem("message", JSON.stringify(temp_message));
+      } else {
+        localStorage.setItem("message", JSON.stringify(message));
+      }
+      getClueCountries();
     }
   };
 

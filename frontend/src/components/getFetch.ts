@@ -59,7 +59,7 @@ export const getCarbonEmission = async (
   temp_data.append("latitude1", location1[0].toString());
   temp_data.append("longitude1", location1[1].toString());
   temp_data.append("latitude2", location2[0].toString());
-  temp_data.append("longtitude2", location2[1].toString());
+  temp_data.append("longitude2", location2[1].toString());
   try {
     const resolve = await fetch(`${backendURL}/calculate_carbon`, {
       method: "POST",
@@ -100,7 +100,13 @@ export const getClueFromId = async (clue_id: number): Promise<Clue> => {
     clue_type: "Key Person" | "General Informants" | "Passer-by";
   }
   try {
-    const resolve = await fetch(`${backendURL}/get_clue_from_id`);
+    const formBody: FormData = new FormData();
+    formBody.append("id", clue_id.toString());
+
+    const resolve = await fetch(`${backendURL}/get_clue_from_id`, {
+      method: "POST",
+      body: formBody,
+    });
     const result: ClueFetchResult = await resolve.json();
     const return_construct: Clue = {
       type: result.clue_type,

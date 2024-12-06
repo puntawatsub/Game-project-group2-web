@@ -411,7 +411,7 @@ def get_limit():
 @app.route('/get_clue_from_id', methods=['POST'])
 def get_clue_from_id():
     connection = db_connection()
-    id = request.form.get('id')
+    id = int(request.form.get('id'))
     result = jsonify(return_clue_from_id(connection, id))
     return result
 

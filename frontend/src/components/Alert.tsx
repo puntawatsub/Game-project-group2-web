@@ -30,7 +30,9 @@ const Alert = (props: AlertProps) => {
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
         </AlertDialogHeader>
-        <AlertDialogDescription>{description}</AlertDialogDescription>
+        <AlertDialogDescription className="whitespace-pre-line overflow-y-auto">
+          {description}
+        </AlertDialogDescription>
         <AlertDialogFooter>
           {/* this part will be filled */}
           {children}

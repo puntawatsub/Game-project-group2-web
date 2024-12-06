@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Map from "../components/Map";
-import { Color } from "cesium";
+import { Color, UrlTemplateImageryProvider } from "cesium";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
@@ -67,6 +67,7 @@ import {
 import { title } from "process";
 import competitors from "@/components/competitors";
 import { loser } from "@/components/winner_loser";
+import Cesium from "@/components/Cesium";
 
 interface ErrorDisplay {
   open: boolean;
@@ -113,6 +114,11 @@ interface PlayerScore {
   clue: number;
   invention: number;
   carbon: number;
+}
+
+interface PlayerLocation {
+  iso_country: string;
+  location: number[];
 }
 
 const Main = () => {
@@ -203,6 +209,14 @@ const Main = () => {
 
   const [playerCountries, setPlayerCountries] = useState<PlayerCountry[]>([]);
 
+  const [playerLocations, setPlayerLocations] = useState<PlayerLocation[]>([]);
+
+  const imageryProvider = new UrlTemplateImageryProvider({
+    url: "https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}",
+  });
+
+  const [turn, setTurn] = useState(0);
+
   // limits
   const [carbonLimit, setCarbonLimit] = useState<number>(0);
   const [inventionTarget, setInventionTarget] = useState<number>(0);
@@ -248,6 +262,20 @@ const Main = () => {
         JSON.parse(localStorage.getItem("score")!);
       setCarbonEmissionData([{ number: temp_json.carbon, total: 0 }]);
     }
+  };
+
+  const getPlayersLocation = async () => {
+    let return_construct: PlayerLocation[] = [];
+    const promise = playerCountries.map(async (playerCountry) => {
+      const location = await getAirportLocation(playerCountry.ICAO);
+      return_construct.push({
+        location: location,
+        iso_country: playerCountry.iso_country,
+      });
+      return;
+    });
+    await Promise.all(promise);
+    setPlayerLocations(return_construct);
   };
 
   const onPlayerSelectCountry = async (country: Country) => {
@@ -569,6 +597,8 @@ const Main = () => {
         localStorage.setItem("message", JSON.stringify(message));
       }
       getClueCountries();
+      await getPlayersLocation();
+      setTurn(turn + 1);
     }
   };
 
@@ -664,6 +694,52 @@ const Main = () => {
     }
   }, []);
 
+  // useEffect(() => {
+  //   console.log("run location finder");
+  //   const init = async () => {
+  //     await getPlayersLocation();
+  //   };
+  //   const interval = setInterval(async () => {
+  //     if (
+  //       localStorage.getItem("user") &&
+  //       playerLocations.length !==
+  //         JSON.parse(localStorage.getItem("playerCountry")!).length
+  //     ) {
+  //       await init();
+  //     } else {
+  //       clearInterval(interval);
+  //     }
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // });
+  useEffect(() => {
+    const init = async () => {
+      await getPlayersLocation();
+    };
+    const interval = setInterval(async () => {
+      await init();
+    }, 1000);
+    return () => clearInterval(interval);
+  });
+
+  // useEffect(() => {
+  //   console.log("run location finder");
+  //   const init = async () => {
+  //     await getPlayersLocation();
+  //   };
+  //   const interval = setInterval(async () => {
+  //     if (
+  //       localStorage.getItem("user") &&
+  //       playerLocations.length !==
+  //         JSON.parse(localStorage.getItem("playerCountry")!).length
+  //     ) {
+  //       await init();
+  //     } else {
+  //       clearInterval(interval);
+  //     }
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // });
   return (
     <div className="flex absolute top-0 bottom-0 left-0 right-0 overflow-hidden">
       {/* Error Alert */}
@@ -921,9 +997,25 @@ const Main = () => {
               />
             </CardContent>
           </Card>
+          <Card className="p-[1rem]">
+            <CardHeader>
+              <CardTitle>Player Country:</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h1 className="text-xl font-bold text-nowrap text-ellipsis">
+                {localStorage.getItem("currentPlayerCountry") &&
+                  playerCountries.find((e) => {
+                    return (
+                      e.iso_country ===
+                      localStorage.getItem("currentPlayerCountry")
+                    );
+                  })?.name}
+              </h1>
+            </CardContent>
+          </Card>
         </footer>
       </section>
-      <div className="flex flex-1 justify-center items-center h-prevent-footer h-full w-full bg-black text-white">
+      {/* <div className="flex flex-1 justify-center items-center h-prevent-footer h-full w-full bg-black text-white">
         {accordionValue.length !== 0 ? (
           <p>{`[${currentLocation[0]}, ${currentLocation[1]}] -> [${nextLocation?.coordinate[0]}, ${nextLocation?.coordinate[1]}]`}</p>
         ) : !currentCountry ? (
@@ -934,14 +1026,47 @@ const Main = () => {
             {`[${currentLocation[0]}, ${currentLocation[1]}]`}
           </p>
         )}
+      </div> */}
+      <div className="flex flex-1 h-prevent-footer">
+        {accordionValue.length !== 0 && nextLocation?.coordinate ? (
+          <Map
+            className="flex flex-1 h-prevent-footer"
+            positions={[
+              {
+                position: [currentLocation[1], currentLocation[0]],
+                name: localStorage.getItem("currentPlayerCountry")!,
+              },
+              {
+                position: [
+                  nextLocation!.coordinate[1],
+                  nextLocation!.coordinate[0],
+                ],
+                name: localStorage.getItem("currentPlayerCountry")!,
+              },
+            ]}
+            polyline={true}
+            width={2}
+            material={Color.RED}
+          ></Map>
+        ) : (
+          <Map
+            className="flex flex-1 h-prevent-footer"
+            positions={
+              playerLocations.length > 0
+                ? playerCountries.map((country) => {
+                    const positions = playerLocations.find((e) => {
+                      return e.iso_country === country.iso_country;
+                    })!.location;
+                    return {
+                      name: country.iso_country,
+                      position: [positions[1], positions[0]],
+                    };
+                  })
+                : []
+            }
+          ></Map>
+        )}
       </div>
-      {/* <Map
-        className="flex flex-1 h-prevent-footer"
-        positions={twoLocations}
-        width={5}
-        material={Color.RED}
-        polyline={isPolyline}
-      ></Map> */}
     </div>
   );
 };

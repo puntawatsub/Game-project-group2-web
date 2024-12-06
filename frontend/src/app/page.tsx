@@ -109,6 +109,12 @@ interface CompetitorResponse {
   message: string[];
 }
 
+interface PlayerScore {
+  clue: number;
+  invention: number;
+  carbon: number;
+}
+
 const Main = () => {
   const [currentLocation, setCurrentLocation] = useState<number[]>([]);
   const [userCountry, setUserCountry] = useState<Country>();
@@ -225,6 +231,120 @@ const Main = () => {
   };
 
   const onPlayerSelectCountry = async (country: Country) => {
+    async function calculateClue() {
+      if (clue_result >= clueTarget) {
+        // reached clue target
+        message.push(`You've reached the clue target.`);
+        const inventor_country =
+          countries[Math.floor(Math.random() * countries.length)];
+        let confirm = false;
+        setConfirmDisplay({
+          open: true,
+          title: "Clue target reached",
+          description:
+            "You've reached the clue target. Do you want to use it now?",
+          onClose: () => {
+            confirm = false;
+            setConfirmDisplay({ ...confirmDisplay, open: false });
+            finishing();
+          },
+          onConfirm: () => {
+            confirm = true;
+            setConfirmDisplay({ ...confirmDisplay, open: false });
+            if (confirm) {
+              // user confirmed to use clue points
+              setConfirmDisplay({
+                open: true,
+                title: "Inventor found",
+                description: `Inventor found at ${inventor_country.name}. Do you wish to go?`,
+                onClose: () => {
+                  confirm = false;
+                  setConfirmDisplay({ ...confirmDisplay, open: false });
+                  finishing();
+                },
+                onConfirm: async () => {
+                  confirm = true;
+                  setConfirmDisplay({ ...confirmDisplay, open: false });
+                  if (true) {
+                    // user confirm to go to the inventors country
+                    const didCooperate = Math.random() < 0.6;
+                    const inventor_icao = await getGameCountryICAO(
+                      inventor_country.iso_country
+                    );
+                    const inventor_location = await getAirportLocation(
+                      inventor_icao
+                    );
+
+                    // get carbon emission
+                    const inventor_carbon_emission = await getCarbonEmission(
+                      currentLocation,
+                      inventor_location
+                    );
+
+                    // set current location to inventor_location
+                    setCurrentLocation(inventor_location);
+                    setCurrentCountry(inventor_country);
+                    ICAO_result = inventor_icao;
+
+                    // add carbon emission
+                    carbon_result += inventor_carbon_emission;
+
+                    // reset clue points
+                    clue_result = 0;
+
+                    if (didCooperate) {
+                      // if inventor chooses to cooperate
+                      const inventors = await getInventors();
+                      const random_inventor =
+                        inventors[Math.floor(Math.random() * inventors.length)];
+                      invention_result += random_inventor.contribution;
+                      message.push(
+                        `You've met ${random_inventor.name} with ${random_inventor.contribution}`
+                      );
+                      if (invention_result >= inventionTarget) {
+                        console.log(
+                          `invention result: ${invention_result} and target ${inventionTarget}`
+                        );
+                        // player wins
+                        setErrorDisplay({
+                          open: true,
+                          title: "You've won!",
+                          description: `Congratulations! You've won this game, You've met ${random_inventor.name} with ${random_inventor.contribution}`,
+                          onClose: () => {
+                            setErrorDisplay({ ...errorDisplay, open: false });
+                            localStorage.clear();
+                            location.reload();
+                          },
+                        });
+                      } else {
+                        finishing();
+                      }
+                    } else {
+                      // inventor chooses not to cooperate
+                      message.push(
+                        `You've met an inventor but they chose not to cooperate.`
+                      );
+                      setErrorDisplay({
+                        open: true,
+                        title: "Failure to convince inventor",
+                        description:
+                          "You've met an investor, but they chose not to cooperate.",
+                        onClose: () => {
+                          setErrorDisplay({ ...errorDisplay, open: false });
+                          finishing();
+                        },
+                      });
+                    }
+                  }
+                },
+              });
+            }
+          },
+        });
+      } else {
+        finishing();
+      }
+    }
     let result_construct: PlayerCountry[] = [];
 
     setAccordianValue("");
@@ -298,6 +418,7 @@ const Main = () => {
         description: `You've met no one`,
         onClose: () => {
           setErrorDisplay({ ...errorDisplay, open: false });
+          calculateClue();
         },
       });
     } else {
@@ -312,179 +433,115 @@ const Main = () => {
         description: `You've met ${fetched_clue.type} with ${fetched_clue.points} clue points`,
         onClose: () => {
           setErrorDisplay({ ...errorDisplay, open: false });
+          calculateClue();
         },
       });
+    }
+    async function finishing() {
+      result_construct.push({
+        invention: invention_result,
+        iso_country: this_playerCountry!.iso_country,
+        player_country_id: this_playerCountry!.player_country_id,
+        ICAO: ICAO_result,
+        name: this_playerCountry!.name,
+        clue: clue_result,
+        carbon: carbon_result,
+      });
+      setCarbonEmissionData([
+        {
+          ...carbonEmissionData[0],
+          number: carbon_result,
+        },
+      ]);
+      setCluePointData([
+        {
+          ...cluePointData[0],
+          number: clue_result,
+        },
+      ]);
+      setCapabilityData([
+        {
+          ...capabilityData[0],
+          number: invention_result,
+        },
+      ]);
 
-      if (clue_result >= clueTarget) {
-        // reached clue target
-        message.push(`You've reached the clue target.`);
-        const inventor_country =
-          countries[Math.floor(Math.random() * countries.length)];
-        let confirm = false;
-        setConfirmDisplay({
-          open: true,
-          title: "Clue target reached",
-          description:
-            "You've reached the clue target. Do you want to use it now?",
-          onClose: () => {
-            confirm = false;
-            setConfirmDisplay({ ...confirmDisplay, open: false });
-          },
-          onConfirm: () => {
-            confirm = true;
-            setConfirmDisplay({ ...confirmDisplay, open: false });
-          },
-        });
-        if (confirm) {
-          // user confirmed to use clue points
-          setConfirmDisplay({
+      localStorage.setItem(
+        "playerScore",
+        JSON.stringify({
+          clue: clue_result,
+          invention: invention_result,
+          carbon: carbon_result,
+        })
+      );
+
+      const competitor_response = await competitors(
+        clueTarget,
+        carbonLimit,
+        inventionTarget
+      );
+      setTimeout(() => {
+        console.log(competitor_response.length);
+        if (competitor_response[0] === "winner") {
+          // someone wins
+          setErrorDisplay({
             open: true,
-            title: "Inventor found",
-            description: `Inventor found at ${inventor_country.name}. Do you wish to go?`,
+            title: "A country wins",
+            description: `${competitor_response[1]} wins the game!`,
             onClose: () => {
-              confirm = false;
-              setConfirmDisplay({ ...confirmDisplay, open: false });
-            },
-            onConfirm: () => {
-              confirm = true;
-              setConfirmDisplay({ ...confirmDisplay, open: true });
+              setErrorDisplay({ ...errorDisplay, open: false });
+              localStorage.clear();
+              location.reload();
             },
           });
-          if (confirm) {
-            // user confirm to go to the inventors country
-            const didCooperate = Math.random() < 0.6;
-            const inventor_icao = await getGameCountryICAO(
-              inventor_country.iso_country
-            );
-            const inventor_location = await getAirportLocation(inventor_icao);
-
-            // get carbon emission
-            const inventor_carbon_emission = await getCarbonEmission(
-              currentLocation,
-              inventor_location
-            );
-
-            // set current location to inventor_location
-            setCurrentLocation(inventor_location);
-            setCurrentCountry(inventor_country);
-            ICAO_result = inventor_icao;
-
-            // add carbon emission
-            carbon_result += inventor_carbon_emission;
-
-            // reset clue points
-            clue_result = 0;
-
-            if (didCooperate) {
-              // if inventor chooses to cooperate
-              const inventors = await getInventors();
-              const random_inventor =
-                inventors[Math.floor(Math.random() * inventors.length)];
-              invention_result += random_inventor.contribution;
-              message.push(
-                `You've met ${random_inventor.name} with ${random_inventor.contribution}`
-              );
-              if (invention_result >= inventionTarget) {
-                // player wins
-                setErrorDisplay({
-                  open: true,
-                  title: "You've won!",
-                  description: "Congratulations! You've won this game.",
-                  onClose: () => {
-                    setErrorDisplay({ ...errorDisplay, open: false });
-                    localStorage.clear();
-                    location.reload();
-                  },
-                });
-              }
+        } else {
+          // no one wins yet
+          for (const response of competitor_response as any[]) {
+            const competitor: CompetitorResponse = response;
+            if (!(competitor.data.name in loser)) {
+              result_construct.push(competitor.data);
+              console.log(competitor.data);
+              message = message.concat(competitor.message);
+              console.log(competitor.message);
+            }
+            message = message.concat(competitor.message);
+          }
+          setCurrentCountry({
+            ...country,
+            ICAO: nextLocation!.ICAO,
+          });
+          setPlayerCountries(result_construct);
+          localStorage.setItem(
+            "playerCountry",
+            JSON.stringify(result_construct)
+          );
+          let all_messages = "";
+          for (const m of message) {
+            if (message.indexOf(m) === 0) {
+              all_messages = m;
             } else {
-              // inventor chooses not to cooperate
-              message.push(
-                `You've met an inventor but they chose not to cooperate.`
-              );
-              setErrorDisplay({
-                open: true,
-                title: "Failure to convince inventor",
-                description:
-                  "You've met an investor, but they chose not to cooperate.",
-                onClose: () => {
-                  setErrorDisplay({ ...errorDisplay, open: false });
-                },
-              });
+              all_messages += `\n\n${m}`;
             }
           }
+          setErrorDisplay({
+            open: true,
+            title: "Turn Summary",
+            description: all_messages,
+            onClose: () => {
+              setErrorDisplay({ ...errorDisplay, open: false });
+            },
+          });
         }
-      }
-    }
-
-    result_construct.push({
-      invention: invention_result,
-      iso_country: this_playerCountry.iso_country,
-      player_country_id: this_playerCountry.player_country_id,
-      ICAO: ICAO_result,
-      name: this_playerCountry.name,
-      clue: clue_result,
-      carbon: carbon_result,
-    });
-    const competitor_response = await competitors(
-      clueTarget,
-      carbonLimit,
-      inventionTarget
-    );
-    console.log(competitor_response.length);
-    if (competitor_response[0] === "winner") {
-      // someone wins
-      setErrorDisplay({
-        open: true,
-        title: "A country wins",
-        description: `${competitor_response[1]} wins the game!`,
-        onClose: () => {
-          setErrorDisplay({ ...errorDisplay, open: false });
-          localStorage.clear();
-          location.reload();
-        },
-      });
-    } else {
-      // no one wins yet
-      for (const response of competitor_response as any[]) {
-        const competitor: CompetitorResponse = response;
-        if (!(competitor.data.name in loser)) {
-          result_construct.push(competitor.data);
-          console.log(competitor.data);
-          message = message.concat(competitor.message);
-          console.log(competitor.message);
-        }
-        message = message.concat(competitor.message);
-      }
-      setCurrentCountry({
-        ...country,
-        ICAO: nextLocation!.ICAO,
-      });
-      setPlayerCountries(result_construct);
-      localStorage.setItem("playerCountry", JSON.stringify(result_construct));
-      let all_messages = "";
-      for (const m of message) {
-        if (message.indexOf(m) === 0) {
-          all_messages = m;
+        if (localStorage.getItem("message")) {
+          let temp_message: string[] = JSON.parse(
+            localStorage.getItem("message")!
+          );
+          temp_message = temp_message.concat(message);
+          localStorage.setItem("message", JSON.stringify(temp_message));
         } else {
-          all_messages += `\n\n${m}`;
+          localStorage.setItem("message", JSON.stringify(message));
         }
-      }
-      setErrorDisplay({
-        open: true,
-        title: "Turn Summary",
-        description: all_messages,
-        onClose: () => {
-          setErrorDisplay({ ...errorDisplay, open: false });
-        },
-      });
-    }
-    if (localStorage.getItem("message")) {
-      let temp_message: string[] = JSON.parse(localStorage.getItem("message")!);
-      temp_message = temp_message.concat(message);
-      localStorage.setItem("message", JSON.stringify(temp_message));
-    } else {
-      localStorage.setItem("message", JSON.stringify(message));
+      }, 1);
     }
   };
 
@@ -512,18 +569,36 @@ const Main = () => {
       fetch(`${backendURL}/get_limit`)
         .then(async (response) => {
           const limit_json: LimitFetch = await response.json();
+          if (localStorage.getItem("playerScore")) {
+            const playerScore: PlayerScore = JSON.parse(
+              localStorage.getItem("playerScore")!
+            );
+            setCluePointData([
+              { total: limit_json.clue_target, number: playerScore.clue },
+            ]);
+            setCapabilityData([
+              {
+                total: limit_json.invention_target,
+                number: playerScore.invention,
+              },
+            ]);
+            setCarbonEmissionData([
+              { total: limit_json.carbon_limit, number: playerScore.carbon },
+            ]);
+          } else {
+            setCluePointData([
+              { ...cluePointData[0], total: limit_json.clue_target },
+            ]);
+            setCapabilityData([
+              { ...capabilityData[0], total: limit_json.invention_target },
+            ]);
+            setCarbonEmissionData([
+              { ...carbonEmissionData[0], total: limit_json.carbon_limit },
+            ]);
+          }
           setCarbonLimit(limit_json.carbon_limit);
           setClueTarget(limit_json.clue_target);
           setInventionTarget(limit_json.invention_target);
-          setCluePointData([
-            { ...cluePointData[0], total: limit_json.clue_target },
-          ]);
-          setCapabilityData([
-            { ...capabilityData[0], total: limit_json.invention_target },
-          ]);
-          setCarbonEmissionData([
-            { ...carbonEmissionData[0], total: limit_json.carbon_limit },
-          ]);
         })
         .catch((error: Error) => {
           setErrorDisplay({
@@ -621,6 +696,42 @@ const Main = () => {
                   ICAO: ICAO_result,
                   clue_id: null,
                 };
+                setCluePointData([
+                  {
+                    ...cluePointData[0],
+                    number: playerCountry.find((e) => {
+                      return e.iso_country === result.iso_country;
+                    })!.clue,
+                  },
+                ]);
+                setCapabilityData([
+                  {
+                    ...capabilityData[0],
+                    number: playerCountry.find((e) => {
+                      return e.iso_country === result.iso_country;
+                    })!.invention,
+                  },
+                ]);
+                setCarbonEmissionData([
+                  {
+                    ...carbonEmissionData[0],
+                    number: playerCountry.find((e) => {
+                      return e.iso_country === result.iso_country;
+                    })!.carbon,
+                  },
+                ]);
+                const temp_score: PlayerScore = {
+                  clue: playerCountry.find((e) => {
+                    return e.iso_country === result.iso_country;
+                  })!.clue,
+                  invention: playerCountry.find((e) => {
+                    return e.iso_country === result.iso_country;
+                  })!.invention,
+                  carbon: playerCountry.find((e) => {
+                    return e.iso_country === result.iso_country;
+                  })!.carbon,
+                };
+                localStorage.setItem("playerScore", JSON.stringify(temp_score));
                 setUserCountry(temp_userCountry);
                 setCurrentCountry(temp_userCountry);
                 localStorage.setItem(

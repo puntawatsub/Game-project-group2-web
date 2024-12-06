@@ -14,7 +14,7 @@ def return_inventor(connection: CMySQLConnection):
         inventors.append({
             "id": inventor[0],
             "name": inventor[1],
-            "contribution": inventor[2],
+            "contribution": int(inventor[2]),
         })
     
     return inventors

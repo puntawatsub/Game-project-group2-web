@@ -30,7 +30,7 @@ const Alert = (props: AlertProps) => {
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
         </AlertDialogHeader>
-        <AlertDialogDescription className="whitespace-pre-line overflow-y-auto">
+        <AlertDialogDescription className="whitespace-pre-line overflow-y-auto max-h-[80vh]">
           {description}
         </AlertDialogDescription>
         <AlertDialogFooter>

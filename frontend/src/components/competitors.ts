@@ -28,18 +28,17 @@ const competitors = async (
       const playerCountry: PlayerCountry[] = JSON.parse(
         localStorage.getItem("playerCountry")!
       );
-      playerCountry.forEach((country) => {
-        getAirportLocation(country.ICAO)
-          .then((location) => {
-            countriesLocation.push({
-              iso_country: country.iso_country,
-              location: location,
-            });
-          })
-          .catch((error: Error) => {
-            console.error(error.message);
+      for (const country of playerCountry) {
+        try {
+          const location = await getAirportLocation(country.ICAO);
+          countriesLocation.push({
+            iso_country: country.iso_country,
+            location: location,
           });
-      });
+        } catch (error: any) {
+          console.error("Error fetching airport location:", error.message);
+        }
+      }
       localStorage.setItem(
         "countriesLocation",
         JSON.stringify(countriesLocation)
@@ -74,125 +73,141 @@ const competitors = async (
   let result_construct: CompetitorResponse[] = [];
 
   const CountryOperation = async () => {
-    for (const country of playerCountries) {
-      if (country.iso_country !== currentPlayerCountry_iso) {
-        console.log(`${country.iso_country} !== ${currentPlayerCountry_iso}`);
-        // Declare all vars
-        let carbon_result = 0;
-        let ICAO_result = "";
-        let invention_result = 0;
-        let clue_result = 0;
-        let message = [];
+    // Create an array of promises for each country
+    let winner = [];
+    const promises = playerCountries
+      .filter((e) => {
+        return e.iso_country !== currentPlayerCountry_iso;
+      })
+      .map(async (country) => {
+        // double checking
+        if (country.iso_country !== currentPlayerCountry_iso) {
+          console.log(`${country.iso_country} !== ${currentPlayerCountry_iso}`);
+          // Declare all vars
+          let carbon_result = 0;
+          let ICAO_result = "";
+          let invention_result = 0;
+          let clue_result = 0;
+          let message: string[] = [];
 
-        // Async function to handle operations
-        try {
-          // Competitor chooses a random country
-          let targetCountry =
-            gameCountries[Math.floor(Math.random() * gameCountries.length)];
+          invention_result = country.invention;
+          clue_result = country.clue;
 
-          if (targetCountry.clue_id !== null) {
-            // Get clue details
-            const clue = await getClueFromId(targetCountry.clue_id);
-            const ICAO = await getGameCountryICAO(targetCountry.iso_country);
+          try {
+            // Competitor chooses a random country
+            let targetCountry =
+              gameCountries[Math.floor(Math.random() * gameCountries.length)];
 
-            const country_location = await getAirportLocation(country.ICAO);
-            const target_location = await getAirportLocation(ICAO);
+            if (targetCountry.clue_id !== null) {
+              // Get clue details
+              const clue = await getClueFromId(targetCountry.clue_id);
+              const ICAO = await getGameCountryICAO(targetCountry.iso_country);
 
-            const carbon_emission =
-              ICAO !== country.ICAO
-                ? await getCarbonEmission(country_location, target_location)
-                : 1400;
+              const country_location = await getAirportLocation(country.ICAO);
+              const target_location = await getAirportLocation(ICAO);
 
-            carbon_result = country.carbon + carbon_emission;
-            ICAO_result = ICAO;
-            if (carbon_result <= carbon_limit) {
-              message.push(
-                `${country.name} went to ${targetCountry.name} with ${carbon_emission} carbon emission, total carbon emission is now ${carbon_result}`
-              );
-              message.push(
-                `${country.name} have met ${clue.type} with ${clue.points} clue points`
-              );
-              clue_result = clue.points + country.clue;
-              if (clue_result >= clue_target) {
-                // Clue target reached
-                message.push(`${country.name} has reached the clue target.`);
-                clue_result = 0;
+              const carbon_emission =
+                ICAO !== country.ICAO
+                  ? await getCarbonEmission(country_location, target_location)
+                  : 1400;
 
-                // Find inventors
-                const inventors = await getInventors();
-                const random_inventor =
-                  inventors[Math.floor(Math.random() * inventors.length)];
-                invention_result =
-                  country.invention + random_inventor.contribution;
-
+              carbon_result = country.carbon + carbon_emission;
+              ICAO_result = ICAO;
+              if (carbon_result <= carbon_limit) {
                 message.push(
-                  `${country.name} has met ${random_inventor.name} with ${random_inventor.contribution} invention points`
+                  `${country.name} went to ${targetCountry.name} with ${carbon_emission} carbon emission, total carbon emission is now ${carbon_result}`
                 );
+                message.push(
+                  `${country.name} have met ${clue.type} with ${clue.points} clue points`
+                );
+                clue_result = clue.points + country.clue;
+                if (clue_result >= clue_target) {
+                  // Clue target reached
+                  message.push(`${country.name} has reached the clue target.`);
+                  clue_result = 0;
 
-                if (invention_result >= invention_target) {
-                  // Winner
-                  winner.push(country.name);
-                  message.push(`${country.name} is now the winner!`);
-                  return ["winner", country.name];
+                  // Find inventors
+                  const inventors = await getInventors();
+                  const random_inventor =
+                    inventors[Math.floor(Math.random() * inventors.length)];
+                  invention_result =
+                    country.invention + random_inventor.contribution;
+
+                  message.push(
+                    `${country.name} has met ${random_inventor.name} with ${random_inventor.contribution} invention points`
+                  );
+
+                  if (invention_result >= invention_target) {
+                    // Winner
+                    winner.push(country.name);
+                    message.push(`${country.name} is now the winner!`);
+                    winner = ["winner", country.name];
+                  }
                 }
+              } else {
+                // Carbon exceeded
+                message.push(
+                  `${country.name} exceeded carbon limit and loses the game.`
+                );
+                loser.push(country.name);
+                localStorage.setItem("losers", JSON.stringify(loser));
               }
             } else {
-              // Carbon exceeded
-              message.push(
-                `${country.name} exceeded carbon limit and loses the game.`
+              // No clue found
+              const ICAO = await getGameCountryICAO(targetCountry.iso_country);
+              ICAO_result = ICAO;
+
+              const country_location = await getAirportLocation(country.ICAO);
+              const target_location = await getAirportLocation(ICAO);
+
+              const carbon_emission = await getCarbonEmission(
+                country_location,
+                target_location
               );
-              loser.push(country.name);
-              localStorage.setItem("losers", JSON.stringify(loser));
+              carbon_result = country.carbon + carbon_emission;
+
+              if (carbon_result <= carbon_limit) {
+                message.push(
+                  `${country.name} went to ${targetCountry.name} with ${carbon_emission}, total carbon emission is now ${carbon_result}`
+                );
+              } else {
+                message.push(
+                  `${country.name} exceeded carbon limit and loses the game.`
+                );
+                loser.push(country.name);
+                localStorage.setItem("losers", JSON.stringify(loser));
+              }
             }
-          } else {
-            // No clue found
-            const ICAO = await getGameCountryICAO(targetCountry.iso_country);
-            ICAO_result = ICAO;
 
-            const country_location = await getAirportLocation(country.ICAO);
-            const target_location = await getAirportLocation(ICAO);
-
-            const carbon_emission = await getCarbonEmission(
-              country_location,
-              target_location
-            );
-            carbon_result = country.carbon + carbon_emission;
-
-            if (carbon_result <= carbon_limit) {
-              message.push(
-                `${country.name} went to ${targetCountry.name} with ${carbon_emission}, total carbon emission is now ${carbon_result}`
-              );
-            } else {
-              message.push(
-                `${country.name} exceeded carbon limit and loses the game.`
-              );
-              loser.push(country.name);
-              localStorage.setItem("losers", JSON.stringify(loser));
-            }
+            // Push results to result_construct
+            result_construct.push({
+              data: {
+                player_country_id: country.player_country_id,
+                invention: invention_result,
+                iso_country: country.iso_country,
+                ICAO: ICAO_result,
+                name: country.name,
+                clue: clue_result,
+                carbon: carbon_result,
+              },
+              message: message,
+            });
+          } catch (error) {
+            console.error("Error processing country:", error);
           }
-
-          // Push results to result_construct
-          result_construct.push({
-            data: {
-              player_country_id: country.player_country_id,
-              invention: invention_result,
-              iso_country: country.iso_country,
-              ICAO: ICAO_result,
-              name: country.name,
-              clue: clue_result,
-              carbon: carbon_result,
-            },
-            message: message,
-          });
-        } catch (error) {
-          console.error("Error processing country:", error);
         }
-      }
-    }
+      });
+
+    // Wait for all promises to resolve
+    await Promise.all(promises);
   };
+
   await CountryOperation();
-  console.log(result_construct.length);
-  return result_construct;
+  if (winner.length === 0) {
+    return result_construct;
+  } else {
+    return winner as ["winner", string];
+  }
 };
 
 export default competitors;

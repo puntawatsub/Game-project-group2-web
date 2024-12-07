@@ -126,7 +126,7 @@ export default function Cesium(props: IonProps) {
             destination={Cartesian3.fromDegrees(
               currentPlayerPin!.position[0],
               currentPlayerPin!.position[1],
-              200000
+              700000
             )}
             duration={2}
           ></CameraFlyTo>

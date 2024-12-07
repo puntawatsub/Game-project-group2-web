@@ -11,7 +11,7 @@ Display the stats (as a popup for every player)
 
 import Country from "@/types/Country";
 import backendURL from "./backendURL";
-import { fetchCarbonEmission, getAirportLocation } from "./getFetch";
+import { getCarbonEmission, getAirportLocation } from "./getFetch";
 import PlayerCountry from "@/types/PlayerCountry";
 
 const onUserSelectCountry = async (
@@ -36,7 +36,7 @@ const onUserSelectCountry = async (
       //   targetCountry.ICAO!
       // );
       try {
-        const carbonEmission: number = await fetchCarbonEmission(
+        const carbonEmission: number = await getCarbonEmission(
           currentCountryLocation,
           targetCountryLocation
         );

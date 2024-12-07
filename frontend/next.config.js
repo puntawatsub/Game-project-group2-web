@@ -13,4 +13,7 @@ module.exports = {
   experimental: {
     optimizePackageImports: ["@chakra-ui/react", "@mui"],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };

@@ -6,3 +6,6 @@ Database.code-workspace
 /frontend/public/cesium
 /backend/.env
 /backend/functions/__pycache__
+/node_modules
+package.json
+pnpm-lock.yaml

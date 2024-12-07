@@ -5,3 +5,4 @@ Database.code-workspace
 .idea
 /frontend/public/cesium
 /backend/.env
+/backend/functions/__pycache__

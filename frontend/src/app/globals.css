@@ -108,3 +108,7 @@ body {
 .h-prevent-footer {
   height: calc(100vh - 12rem);
 }
+
+.bottom-prevent-footer {
+  bottom: 13rem;
+}

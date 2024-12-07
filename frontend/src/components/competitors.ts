@@ -22,6 +22,8 @@ const competitors = async (
   carbon_limit: number,
   invention_target: number
 ): Promise<CompetitorResponse[] | ["winner", string]> => {
+  let result_winner: string[] = [];
+
   if (!localStorage.getItem("countriesLocation")) {
     if (localStorage.getItem("playerCountry")) {
       let countriesLocation: CountryLocation[] = [];
@@ -141,7 +143,8 @@ const competitors = async (
                     // Winner
                     winner.push(country.name);
                     message.push(`${country.name} is now the winner!`);
-                    winner = ["winner", country.name];
+                    localStorage.setItem("winner", country.name);
+                    result_winner = ["winner", country.name];
                   }
                 }
               } else {
@@ -203,10 +206,11 @@ const competitors = async (
   };
 
   await CountryOperation();
-  if (winner.length === 0) {
-    return result_construct;
+  if (localStorage.getItem("winner")) {
+    console.log("winner should trigger");
+    return result_winner as ["winner", string];
   } else {
-    return winner as ["winner", string];
+    return result_construct;
   }
 };
 

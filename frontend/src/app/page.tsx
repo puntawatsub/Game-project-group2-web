@@ -64,10 +64,19 @@ import {
   getNewPlayerCountry,
   getPlayerCountryICAO,
 } from "@/components/getFetch";
-import { title } from "process";
 import competitors from "@/components/competitors";
 import { loser } from "@/components/winner_loser";
 import Cesium from "@/components/Cesium";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ErrorDisplay {
   open: boolean;
@@ -211,6 +220,7 @@ const Main = () => {
 
   const [playerLocations, setPlayerLocations] = useState<PlayerLocation[]>([]);
 
+  const [isStatusShowOpen, setIsStatusShowOpen] = useState(false);
   const imageryProvider = new UrlTemplateImageryProvider({
     url: "https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}",
   });
@@ -757,6 +767,109 @@ const Main = () => {
           Close
         </Button>
       </Alert>
+      <Dialog
+        open={isStatusShowOpen}
+        onOpenChange={(open) => setIsStatusShowOpen(open)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Countries Status</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="score">
+            <TabsList className="w-full flex flex-row justify-around">
+              <TabsTrigger value="score" className="flex-1">
+                Score
+              </TabsTrigger>
+              <TabsTrigger value="message" className="flex-1">
+                Messages
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="score">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Country</TableHead>
+                    <TableHead>Carbon Emission</TableHead>
+                    <TableHead>Clue Points</TableHead>
+                    <TableHead className="text-right">
+                      Invention Points
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {playerCountries
+                    .filter((e) => {
+                      if (localStorage.getItem("currentPlayerCountry")) {
+                        return (
+                          localStorage.getItem("currentPlayerCountry") !==
+                          e.iso_country
+                        );
+                      }
+                      return true;
+                    })
+                    .map((playerCountry, index) => {
+                      return (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">
+                            {playerCountry.name} ({playerCountry.iso_country})
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline text-gray-500 font-light">
+                              <span className="font-bold text-[18px] text-black">
+                                {playerCountry.carbon.toFixed(3)}
+                              </span>
+                              /{carbonLimit}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline text-gray-500 font-light">
+                              <span className="font-bold text-[18px] text-black">
+                                {playerCountry.clue}
+                              </span>
+                              /{clueTarget}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="inline text-gray-500 font-light">
+                              <span className="font-bold text-[18px] text-black">
+                                {playerCountry.invention}
+                              </span>
+                              /{inventionTarget}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            <TabsContent
+              value="message"
+              className="max-h-[50vh] overflow-y-auto"
+            >
+              <Table className="h-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Messages</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {localStorage.getItem("message") &&
+                    (
+                      JSON.parse(localStorage.getItem("message")!) as string[]
+                    ).map((message, index) => {
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>{message}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
 
       <Alert
         title={confirmDisplay.title}
@@ -869,7 +982,11 @@ const Main = () => {
             <h1 className="text-[16px]">
               Hello, Spy {username.length < 11 ? username : ""}
             </h1>
-            <Button variant="ghost" className="outline-none">
+            <Button
+              variant="ghost"
+              onClick={() => setIsStatusShowOpen(true)}
+              className="outline-none"
+            >
               <ChartBar></ChartBar>
             </Button>
           </div>

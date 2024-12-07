@@ -855,15 +855,15 @@ const Main = () => {
                 </TableHeader>
                 <TableBody>
                   {localStorage.getItem("message") &&
-                    (
-                      JSON.parse(localStorage.getItem("message")!) as string[]
-                    ).map((message, index) => {
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>{message}</TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    (JSON.parse(localStorage.getItem("message")!) as string[])
+                      .reverse()
+                      .map((message, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>{message}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                 </TableBody>
               </Table>
             </TabsContent>

@@ -3,3 +3,10 @@
 Database.code-workspace
 .env
 .idea
+/frontend/public/cesium
+/backend/.env
+/backend/functions/__pycache__
+/node_modules
+package.json
+pnpm-lock.yaml
+/backend/.venv

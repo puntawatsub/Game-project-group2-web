@@ -9,3 +9,4 @@ Database.code-workspace
 /node_modules
 package.json
 pnpm-lock.yaml
+/backend/.venv

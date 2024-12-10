@@ -357,7 +357,7 @@ const LazyMain = () => {
                         inventors[Math.floor(Math.random() * inventors.length)];
                       invention_result += random_inventor.contribution;
                       message.push(
-                        `You've met ${random_inventor.name} with ${random_inventor.contribution}`
+                        `You've met ${random_inventor.name} with ${random_inventor.contribution} invention points.`
                       );
                       if (invention_result >= inventionTarget) {
                         console.log(
@@ -367,7 +367,7 @@ const LazyMain = () => {
                         setErrorDisplay({
                           open: true,
                           title: "You've won!",
-                          description: `Congratulations! You've won this game, You've met ${random_inventor.name} with ${random_inventor.contribution}`,
+                          description: `Congratulations! You've won this game, You've met ${random_inventor.name} with ${random_inventor.contribution} invention points.`,
                           onClose: () => {
                             setErrorDisplay({ ...errorDisplay, open: false });
                             localStorage.clear();
@@ -407,10 +407,18 @@ const LazyMain = () => {
 
     setAccordianValue("");
     setSearchInput("");
-    const carbon_emission = await getCarbonEmission(
-      currentLocation,
-      nextLocation!.coordinate
-    );
+    let carbon_emission = 0;
+    const isSameLocation =
+      currentLocation[0] === nextLocation!.coordinate[0] &&
+      currentLocation[1] === nextLocation!.coordinate[1];
+    if (isSameLocation) {
+      carbon_emission = 1400;
+    } else {
+      carbon_emission = await getCarbonEmission(
+        currentLocation,
+        nextLocation!.coordinate
+      );
+    }
     if (!localStorage.getItem("currentPlayerCountry")) {
       throw Error("currentPlayerCountry not found.");
     }
@@ -445,17 +453,34 @@ const LazyMain = () => {
       location.reload();
     }
     ICAO_result = nextCountry!.ICAO!;
+
     message.push(
-      `You went to ${
-        nextCountry!.name
-      } with ${carbon_emission} carbon emission, total carbon emission is now ${carbon_result}`
+      `${
+        isSameLocation
+          ? "You taxied around the same runway and emitted"
+          : `You went to ${nextCountry!.name} with`
+      } ${
+        Number.isInteger(carbon_emission)
+          ? carbon_emission
+          : carbon_emission.toFixed(3)
+      } carbon emission, total carbon emission is now ${
+        Number.isInteger(carbon_result)
+          ? carbon_result
+          : carbon_result.toFixed(3)
+      }`
     );
     setErrorDisplay({
       open: true,
       title: "Travel",
-      description: `You went to ${
-        nextCountry!.name
-      } with ${carbon_emission} carbon emission, total carbon emission is now ${carbon_result}`,
+      description: `You went to ${nextCountry!.name} with ${
+        Number.isInteger(carbon_emission)
+          ? carbon_emission
+          : carbon_emission.toFixed(3)
+      } carbon emission, total carbon emission is now ${
+        Number.isInteger(carbon_emission)
+          ? carbon_emission
+          : carbon_emission.toFixed(3)
+      }`,
       onClose: () => {
         setErrorDisplay({ ...errorDisplay, open: false });
       },
@@ -504,6 +529,9 @@ const LazyMain = () => {
             location.reload();
           },
         });
+      }
+      if (clue_result > 20) {
+        clue_result = 20;
       }
       result_construct.push({
         invention: invention_result,

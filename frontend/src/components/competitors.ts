@@ -117,7 +117,15 @@ const competitors = async (
               ICAO_result = ICAO;
               if (carbon_result <= carbon_limit) {
                 message.push(
-                  `${country.name} went to ${targetCountry.name} with ${carbon_emission} carbon emission, total carbon emission is now ${carbon_result}`
+                  `${country.name} went to ${targetCountry.name} with ${
+                    Number.isInteger(carbon_emission)
+                      ? carbon_emission
+                      : carbon_emission.toFixed(3)
+                  } carbon emission, total carbon emission is now ${
+                    Number.isInteger(carbon_result)
+                      ? carbon_result
+                      : carbon_result.toFixed(3)
+                  }`
                 );
                 message.push(
                   `${country.name} have met ${clue.type} with ${clue.points} clue points`
@@ -171,7 +179,15 @@ const competitors = async (
 
               if (carbon_result <= carbon_limit) {
                 message.push(
-                  `${country.name} went to ${targetCountry.name} with ${carbon_emission}, total carbon emission is now ${carbon_result}`
+                  `${country.name} went to ${targetCountry.name} with ${
+                    Number.isInteger(carbon_emission)
+                      ? carbon_emission
+                      : carbon_emission.toFixed(3)
+                  }, total carbon emission is now ${
+                    Number.isInteger(carbon_result)
+                      ? carbon_result
+                      : carbon_result.toFixed(3)
+                  }`
                 );
               } else {
                 message.push(
